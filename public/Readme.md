@@ -52,14 +52,14 @@ For example. Our folder should at least include an jpeg image named, "3.jpg"
 
 Once your dataset is set up, make sure to run the following command (may very per device / cuda capabilities)
 
-    $ sudo pip install -r requirements.txt
+    $ pip install -r requirements.txt
 
 or
 
-    $ sudo pip3 install -r requirements.txt
+    $ pip3 install -r requirements.txt
 
 Then to train:
 
-    $ sudo python chap --dataset <name of dataset> --dataset_path <path leading to, but not including name of dataset>
+    $ python chap --dataset <name of dataset> --dataset_path <path leading to, but not including name of dataset>
 
 
