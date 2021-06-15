@@ -1,0 +1,62 @@
+{
+    "experiment_config": {
+        "dataset": "cifar10",
+        "dataset_path": "/Users/ethangarza/",
+        "experiment_type": "training",
+        "experiments_folder": "/Users/ethangarza/chap/chap/experiments/",
+        "gpu_devices": [
+            0,
+            1,
+            2,
+            3
+        ],
+        "is_grid_crop": false,
+        "lambda1": 1.0,
+        "lambda2": 1.0,
+        "prediction_attribute": "animated",
+        "protected_attribute": "class",
+        "pruning_ratio": 0.65,
+        "pruning_style": "network",
+        "split_layer": 4,
+        "total_epochs": 140
+    },
+    "research_config": {
+        "adversary_hparams": {
+            "logits": 10,
+            "needed": [
+                "split_layer"
+            ],
+            "pretrained": false
+        },
+        "client_hparams": {
+            "needed": [
+                "split_layer",
+                "is_grid_crop"
+            ],
+            "pretrained": false
+        },
+        "dataset": "cifar10",
+        "exp_id": "1",
+        "img_size": 32,
+        "model_name": "resnet18_scratch",
+        "pruner_hparams": {
+            "needed": [
+                "split_layer",
+                "pruning_ratio",
+                "pruning_style"
+            ],
+            "pretrained": false
+        },
+        "pruning_style": "network",
+        "server_hparams": {
+            "logits": 2,
+            "needed": [
+                "split_layer"
+            ],
+            "pretrained": false
+        },
+        "split": false,
+        "test_batch_size": 64,
+        "total_epochs": 150
+    }
+}

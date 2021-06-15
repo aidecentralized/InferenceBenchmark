@@ -1,3 +1,3 @@
 # InferenceBenchmark
 
-## Code for the framework and Google drive for the dataset to be released within 3 days
+## For the benchmarking framework, please visit the public folder
