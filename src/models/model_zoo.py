@@ -9,8 +9,24 @@ class Model(nn.Module):
         self.loss_fn = nn.CrossEntropyLoss()
         self.split_layer = config["split_layer"]
         self.utils = utils
+        self.loss_tag = "server_loss"
+        self.acc_tag = "server_acc"
+        self.utils.logger.register_tag("train/" + self.loss_tag)
+        self.utils.logger.register_tag("val/" + self.loss_tag)
+        self.utils.logger.register_tag("train/" + self.acc_tag)
+        self.utils.logger.register_tag("val/" + self.acc_tag)
+
         self.assign_model(config)
         self.assign_optim(config)
+        self.train()
+
+    def train(self):
+        self.mode = "train"
+        self.model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.model.eval()
 
     def assign_model(self, config):
         pretrained = config["pretrained"]
@@ -24,6 +40,8 @@ class Model(nn.Module):
             self.model = nn.Sequential(*model)
             self.model = self.utils.model_on_gpus(self.model)
 
+        self.utils.register_model("server_model", self.model)
+
     def assign_optim(self, config):
         lr = config["lr"]
         if config["optimizer"] == "adam":
@@ -31,15 +49,14 @@ class Model(nn.Module):
 
     def forward(self, x):
         x = self.model(x)
-        """for i, l in enumerate(self.model):
-            if i <= self.split_layer:
-                continue
-            x = l(x)"""
         return nn.functional.softmax(x, dim=1)
 
     def compute_loss(self, preds, y):
         self.loss = self.loss_fn(preds, y)
-        print(self.loss)
+        self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
+                                    self.loss.item())
+        self.utils.logger.add_entry(self.mode + "/" + self.acc_tag,
+                                    (preds, y), "acc")
 
     def optimize(self):
         self.optim.zero_grad()

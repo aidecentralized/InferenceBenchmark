@@ -1,62 +1,17 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from tensorboardX import SummaryWriter
 import os
-import logging
-from metrics.loaders import MetricLoader
+from utils.logs import Logs
 from shutil import copytree, copy2
 from glob import glob
 import shutil
 
 
-class Logs():
-    def __init__(self, config):
-        self.init_tb(config)
-        self.init_logfile(config)
-        self.keys = {}
-
-    def register_key(self, key):
-        if self.keys.get(key) is not None:
-            print("duplicate key {}".format(key))
-        self.keys[key] = []
-
-    def init_logfile(self, config):
-        self.log_path = config["log_path"]
-        self.log_format = "%(asctime)s::%(levelname)s::%(name)s::"\
-                          "%(filename)s::%(lineno)d::%(message)s"
-        logging.basicConfig(filename="{log_path}/log_console.log".format(
-                                                  log_path=self.log_path),
-                            level='DEBUG', format=self.log_format)
-
-    def init_tb(self, config):
-        log_path = config["log_path"]
-        tb_path = log_path + "/tensorboard"
-        if not os.path.exists(tb_path) or not os.path.isdir(tb_path):
-            os.mkdir(tb_path)
-        self.writer = SummaryWriter(tb_path)
-
-    def log_console(self, msg):
-        logging.info(msg)
-
-    def log_tb(self, key, value, iteration):
-        self.writer.add_scalar(key, value, iteration)
-
-    def log_data(self, key, data, metric, iteration):
-        """ Metric is computed on data and logged with the key. If the metric is "precomputed"
-        then the data is directly stored with the key """
-        if metric == "acc":
-            data = self.metrics.acc(data[0], data[1])
-        if metric == "precomputed":
-            pass
-        self.log_console("iteration {}, {}: {}".format(iteration, key, data))
-        self.log_tb(key, data, iteration)
-
 class Utils():
     def __init__(self, config) -> None:
         self.config = config
-        self.utils = Logs(config)
-        self.metrics = MetricLoader()
+        self.model_registry = {}
 
         self.gpu_devices = config.get("gpu_devices")
         gpu_id = self.gpu_devices[0]
@@ -65,6 +20,9 @@ class Utils():
             self.device = torch.device('cuda:{}'.format(gpu_id))
         else:
             self.device = torch.device('cpu')
+
+    def init_logger(self):
+        self.logger = Logs(self.config)
 
     def model_on_gpus(self, model):
         total_gpus = len(self.gpu_devices)
@@ -106,6 +64,9 @@ class Utils():
                 # Remove first char which is . due to the glob
                 copytree(folder, path + folder[1:])
 
+        # For saving models in the future
+        os.mkdir(self.config.get('model_path'))
+
     def check_path_status(self, path):
         """experiment_path = None
         if auto:  # This is to not duplicate work already done and to continue running experiments
@@ -118,6 +79,7 @@ class Utils():
             exit()
         elif inp == "r":
             shutil.rmtree(path)
+            os.makedirs(path)
         else:
             print("Input not understood")
             exit()
@@ -127,3 +89,22 @@ class Utils():
             self.copy_source_code(path)
             os.mkdir(self.config.get('model_path'))
             os.mkdir(self.config.get('log_path'))"""
+
+    def register_model(self, key, model):
+        if self.model_registry.get(key) is None:
+            self.model_registry[key] = model
+        else:
+            self.logger.log_console("model {} is already registered".format(key))
+
+    def _save_model(self, state_dict, path):
+        torch.save(state_dict, path)
+
+    def save_models(self):
+        for model_name, model in self.model_registry.items():
+            model_path = self.config["model_path"] + "/{}.pt".format(model_name)
+            if isinstance(model, nn.DataParallel):
+                state_dict = model.module.state_dict()
+            else:
+                state_dict = model.state_dict()
+            self._save_model(state_dict, model_path)
+        self.logger.log_console("models saved")

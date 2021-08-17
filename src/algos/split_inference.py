@@ -9,7 +9,16 @@ class SplitInference(SimbaDefence):
     def initialize(self, config):
         self.client_model = self.init_client_model(config)
         self.put_on_gpus()
+        self.utils.register_model("client_model", self.client_model)
         self.optim = self.init_optim(config, self.client_model)
+
+    def train(self):
+        self.mode = "train"
+        self.client_model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.client_model.eval()
 
     def forward(self, x):
         self.z = self.client_model(x)
