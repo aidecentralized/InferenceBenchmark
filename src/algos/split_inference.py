@@ -27,7 +27,7 @@ class SplitInference(SimbaDefence):
         z.requires_grad = True
         return z
 
-    def backward(self, server_grads, privt_lbs):
+    def backward(self, server_grads, privt_lbls):
         self.optim.zero_grad()
         self.z.backward(server_grads)
         self.optim.step()

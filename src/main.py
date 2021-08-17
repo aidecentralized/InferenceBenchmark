@@ -1,7 +1,7 @@
 import argparse
 from scheduler import Scheduler
 
-b_default = "./configs/benchmark_config.json"
+b_default = "./configs/split_inference.json"
 s_default = "./configs/system_config.json"
 
 parser = argparse.ArgumentParser(description='Run SIMBA benchmark')

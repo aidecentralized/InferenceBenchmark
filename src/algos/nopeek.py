@@ -34,26 +34,44 @@ class DistCorrelation(_Loss):
 
 
 class NoPeek(SimbaDefence):
-    def __init__(self) -> None:
-        super(NoPeek, self).__init__()
+    def __init__(self, config, utils) -> None:
+        super(NoPeek, self).__init__(utils)
+        self.initialize(config)
 
     def initialize(self, config):
         self.client_model = self.init_client_model(config)
+        self.put_on_gpus()
+        self.utils.register_model("client_model", self.client_model)
         self.optim = self.init_optim(config, self.client_model)
         self.loss = DistCorrelation()
+
         self.alpha = config["alpha"]
+        self.dcor_tag = "dcor"
+        self.utils.logger.register_tag("train/" + self.dcor_tag)
+        self.utils.logger.register_tag("val/" + self.dcor_tag)
+
+    def train(self):
+        self.mode = "train"
+        self.client_model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.client_model.eval()
 
     def forward(self, x):
         self.z = self.client_model(x)
         self.x = x
-        return self.z
+        z = self.z.detach()
+        z.requires_grad = True
+        return z
 
-    def backward(self, server_grads):
+    def backward(self, server_grads, privt_lbls):
         self.optim.zero_grad()
-        dcor_loss = (1 - self.alpha) * self.loss(self.x, self.z)
-        self.z.backward(self.alpha * server_grads)
-        dcor_loss.backward()
+        # Higher the alpha, higher the weight for dcor loss would be
+        dcor_loss = self.loss(self.x, self.z)
+        self.z.backward((1 - self.alpha) * server_grads, retain_graph=True)
+        (self.alpha * dcor_loss).backward()
         self.optim.step()
+        self.utils.logger.add_entry(self.mode + "/" + self.dcor_tag,
+                                    dcor_loss.item())
 
-    def log_metrics(self):
-        pass

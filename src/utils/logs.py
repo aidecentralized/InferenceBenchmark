@@ -23,6 +23,7 @@ class Logs():
     def set_log_freq(self, total_iters):
         log_freq = 10 # 10 times every epoch
         self.trigger_freq = total_iters // log_freq
+        self.total_iters = total_iters
 
     def init_logfile(self, config):
         self.log_path = config["log_path"]
@@ -44,10 +45,13 @@ class Logs():
         logging.info(msg)
 
     def log_tb(self, key, value, iteration):
+        # Since iteration is reset after every epoch
+        iteration = self.epoch * self.total_iters + iteration
         self.writer.add_scalar(key, value, iteration)
 
     def log_data(self, key, val, iteration):
-        self.log_console("iteration {}, {}: {:.4f}".format(iteration, key, val))
+        self.log_console("epoch {}, iteration {}, {}: {:.4f}".format(self.epoch,
+                                                                     iteration, key, val))
         self.log_tb(key, val, iteration)
 
     def add_entry(self, key, data, metric=None):

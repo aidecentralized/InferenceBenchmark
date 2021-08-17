@@ -18,7 +18,6 @@ class Model(nn.Module):
 
         self.assign_model(config)
         self.assign_optim(config)
-        self.train()
 
     def train(self):
         self.mode = "train"

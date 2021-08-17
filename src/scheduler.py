@@ -26,6 +26,7 @@ class Scheduler():
         self.generate_challenge()
 
     def train(self) -> None:
+        self.algo.train()
         self.model.train()
         for batch_idx, sample in enumerate(self.dataloader.train):
             data, pred_lbls, privt_lbls = self.utils.get_data(sample)
@@ -34,6 +35,7 @@ class Scheduler():
             self.algo.backward(grads, privt_lbls)
 
     def test(self) -> None:
+        self.algo.eval()
         self.model.eval()
         for batch_idx, sample in enumerate(self.dataloader.test):
             data, pred_lbls, _ = self.utils.get_data(sample)
@@ -45,6 +47,8 @@ class Scheduler():
         self.utils.save_models()
 
     def generate_challenge(self) -> None:
+        self.algo.eval()
+        self.model.eval()
         for batch_idx, sample in enumerate(self.dataloader.test):
             data, pred_lbls, privt_lbls = self.utils.get_data(sample)
             z = self.algo.forward(data)

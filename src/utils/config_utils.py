@@ -1,5 +1,6 @@
 import os
 import json
+import jmespath
 
 
 def load_config_as_dict(filepaths):
@@ -28,8 +29,6 @@ def config_loader(filepath):
     json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
     json_dict['train_batch_size'] = json_dict.get('train_batch_size', 64) * json_dict['num_gpus']
 
-    if 'is_grid_crop' not in json_dict:
-        json_dict['is_grid_crop'] = False
 
     if 'manual_expt_name' in json_dict.keys():
         '''serves two use cases - generating challenge for past experiments which followed different
@@ -37,18 +36,19 @@ def config_loader(filepath):
         a different client model.'''
         experiment_name = json_dict['manual_expt_name']
     else:
-        if json_dict['is_grid_crop']:
-            grid_crop = "grid_crop"
-        else:
-            grid_crop = ""
-        experiment_name = "{}_{}_{}_{}_split{}_{}_{}".format(
+        experiment_name = "{}_{}_{}_{}_split{}_{}".format(
             json_dict['method'],
             json_dict['dataset'],
             json_dict['protected_attribute'],
             json_dict['client']['model_name'],
             json_dict['client']['split_layer'],
-            grid_crop,
             json_dict['exp_id'])
+        for exp_key in json_dict["exp_keys"]:
+            item = jmespath.search(exp_key, json_dict)
+            assert item is not None
+            key = exp_key.split(".")[-1]
+            assert key is not None
+            experiment_name += "_{}_{}".format(key, item)
 
     experiments_folder = json_dict["experiments_folder"]
     results_path = experiments_folder + experiment_name
@@ -91,71 +91,6 @@ def update_config(new_variables=None):
     path = os.path.join(base_path, rel_path)
     with open(path, 'w') as fp:
         json.dump(json_dict, fp, sort_keys=True, indent=4)
-
-
-def load_experiment_config(experiment_path):
-    """
-    Properly load and configure the json object into the expected config format. This includes
-    the calculations of dynamic variables.
-    """
-    json_dict = load_relative_config_as_dict(experiment_path)
-    experiment_dict = json_dict.get("experiment_config", {}).copy()
-    research_dict = json_dict.get("research_config", {}).copy()
-    research_dict.update(experiment_dict)
-    json_dict = research_dict
-
-    json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
-    json_dict['train_batch_size'] = 64 * json_dict['num_gpus']
-
-    experiment_name = "pruning_{}_{}_{}_split{}_ratio{}_{}".format(json_dict['pruning_style'],
-        json_dict['dataset'], json_dict['model_name'], json_dict['split_layer'],
-        json_dict['pruning_ratio'], json_dict['exp_id'])
-
-    results_path = "../experiments/" + experiment_name
-    log_path = results_path + "/logs/"
-    model_path = results_path + "/saved_models"
-    
-    json_dict["experiment_name"] = experiment_name
-    json_dict["log_path"] = log_path
-    json_dict["model_path"] = model_path
-    json_dict["results_path"] = results_path
-
-    needed_params = {
-    "pruner_hparams": {
-            "needed": [
-                "split_layer",
-                "pruning_ratio",
-                "pruning_style"
-            ],
-            "pretrained": False
-        },
-    "server_hparams": {
-            "logits": 2,
-            "needed": [
-                "split_layer"
-            ],
-            "pretrained": False
-        },
-        "adversary_hparams": {
-            "logits": 7,
-            "needed": [
-                "split_layer"
-            ],
-            "pretrained": False
-        },
-        "client_hparams": {
-            "needed": [
-                "split_layer"
-            ],
-            "pretrained": False
-        }
-    }
-
-    for np in needed_params.keys():
-        if np not in json_dict:
-            json_dict[np] = needed_params[np]
-
-    return json_dict
 
 
 def load_relative_config_as_dict(experiment_path):

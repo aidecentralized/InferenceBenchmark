@@ -23,4 +23,4 @@ Evaluation involves two category of metrics. One category of metric is specific 
 - [] fix redundancy and code smells in dataset_utils.py
 - [] remove all usages/references to the warmup_logs
 - [] add named keys functionality in the json file. The experiments folder name will then add things by default and add key-value pair from the json file labeled in some way.
-- [] Remove grid_crop as a default in config_utils and add it under exp_keys for channel pruning.
+- [] imageNet integration

@@ -1,5 +1,6 @@
 from algos.split_inference import SplitInference
 from algos.nopeek import NoPeek
+from algos.uniform_noise import UniformNoise
 from data.loaders import DataLoader
 from models.model_zoo import Model
 from utils.utils import Utils
@@ -28,6 +29,8 @@ def load_algo(config, utils):
         algo = SplitInference(config["client"], utils)
     elif method == "nopeek":
         algo = NoPeek(config["client"], utils)
+    elif method == "uniform_noise":
+        algo = UniformNoise(config["client"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
         exit()
