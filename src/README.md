@@ -19,6 +19,9 @@ Currently supported algorithms on the defense side include. These algorithms wor
 1. Split Inference `split_inference.json`
 2. Uniform noise (currently supports Laplace and Gaussian distribution) `uniform_noise.json`
 3. NoPeek `nopeek.json`
+4. Siamese Embedding `siamese_embedding.json`
+5. PCA Embedding `pca_embedding.json`
+
 ### Writing your own algorithm
 Most of the code in the algos is modular enough for a user to only focus on writing the important part of the mechanism and rest all functions automatically. Implementor of a mechanism just needs to inherit the `SimbaDefense` class from `algos.simba_algo`. A user can also build upon existing mechanisms by inheriting them and overriding a particular function of the algorithm.
 ## Evaluation
