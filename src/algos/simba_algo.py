@@ -21,6 +21,14 @@ class SimbaDefence(nn.Module):
     def log_metrics(self):
         pass
 
+    def train(self):
+        self.mode = "train"
+        self.client_model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.client_model.eval()
+
     def init_client_model(self, config):
         if config["model_name"] == "resnet18":
             model = models.resnet18(pretrained=config["pretrained"])

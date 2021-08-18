@@ -12,25 +12,16 @@ class SplitInference(SimbaDefence):
         self.utils.register_model("client_model", self.client_model)
         self.optim = self.init_optim(config, self.client_model)
 
-    def train(self):
-        self.mode = "train"
-        self.client_model.train()
-
-    def eval(self):
-        self.mode = "val"
-        self.client_model.eval()
-
-    def forward(self, x):
+    def forward(self, items):
+        x = items["x"]
         self.z = self.client_model(x)
         # z will be detached to prevent any grad flow from the client
         z = self.z.detach()
         z.requires_grad = True
         return z
 
-    def backward(self, server_grads, privt_lbls):
+    def backward(self, items):
+        server_grads = items["server_grads"]
         self.optim.zero_grad()
         self.z.backward(server_grads)
         self.optim.step()
-
-    def log_metrics(self):
-        pass

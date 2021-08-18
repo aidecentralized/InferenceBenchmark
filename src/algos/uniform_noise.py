@@ -34,21 +34,14 @@ class UniformNoise(SimbaDefence):
         self.optim = self.init_optim(config, self.client_model)
         self.set_noise_params(config)
 
-    def train(self):
-        self.mode = "train"
-        self.client_model.train()
-
-    def eval(self):
-        self.mode = "val"
-        self.client_model.eval()
-
     def set_noise_params(self, config):
         if config["distribution"] == "gaussian":
             self.NoiseModel = AddGaussianNoise(mean=config["mean"], sigma=config["sigma"])
         elif config["distribution"] == "laplace":
             self.NoiseModel = AddLaplaceNoise(mean=config["mean"], sigma=config["sigma"])
 
-    def forward(self, x):
+    def forward(self, items):
+        x = items["x"]
         _z = self.client_model(x)
         self.z = self.NoiseModel(_z)
         # z will be detached to prevent any grad flow from the client
@@ -56,10 +49,8 @@ class UniformNoise(SimbaDefence):
         z.requires_grad = True
         return z
 
-    def backward(self, server_grads, privt_lbs):
+    def backward(self, items):
+        server_grads = items["server_grads"]
         self.optim.zero_grad()
         self.z.backward(server_grads)
         self.optim.step()
-
-    def log_metrics(self):
-        pass

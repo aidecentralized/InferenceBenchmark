@@ -50,28 +50,21 @@ class NoPeek(SimbaDefence):
         self.utils.logger.register_tag("train/" + self.dcor_tag)
         self.utils.logger.register_tag("val/" + self.dcor_tag)
 
-    def train(self):
-        self.mode = "train"
-        self.client_model.train()
-
-    def eval(self):
-        self.mode = "val"
-        self.client_model.eval()
-
-    def forward(self, x):
+    def forward(self, items):
+        x = items["x"]
         self.z = self.client_model(x)
         self.x = x
         z = self.z.detach()
         z.requires_grad = True
+        self.dcor_loss = self.loss(self.x, self.z)
+        self.utils.logger.add_entry(self.mode + "/" + self.dcor_tag,
+                                    self.dcor_loss.item())
         return z
 
-    def backward(self, server_grads, privt_lbls):
+    def backward(self, items):
+        server_grads = items["server_grads"]
         self.optim.zero_grad()
         # Higher the alpha, higher the weight for dcor loss would be
-        dcor_loss = self.loss(self.x, self.z)
         self.z.backward((1 - self.alpha) * server_grads, retain_graph=True)
-        (self.alpha * dcor_loss).backward()
+        (self.alpha * self.dcor_loss).backward()
         self.optim.step()
-        self.utils.logger.add_entry(self.mode + "/" + self.dcor_tag,
-                                    dcor_loss.item())
-

@@ -37,16 +37,14 @@ class Logs():
     def init_tb(self, config):
         log_path = config["log_path"]
         tb_path = log_path + "/tensorboard"
-        if not os.path.exists(tb_path) or not os.path.isdir(tb_path):
-            os.makedirs(tb_path)
+        # if not os.path.exists(tb_path) or not os.path.isdir(tb_path):
+        os.makedirs(tb_path)
         self.writer = SummaryWriter(tb_path)
 
     def log_console(self, msg):
         logging.info(msg)
 
     def log_tb(self, key, value, iteration):
-        # Since iteration is reset after every epoch
-        iteration = self.epoch * self.total_iters + iteration
         self.writer.add_scalar(key, value, iteration)
 
     def log_data(self, key, val, iteration):
@@ -65,7 +63,9 @@ class Logs():
         self.curr_iters += 1
         # flush logs only if we are in validation mode
         if key.startswith("train"):
-            self.log_tb(key, val, self.curr_iters)
+            # Since iteration is reset after every epoch
+            iteration = self.epoch * self.total_iters + self.curr_iters
+            self.log_tb(key, val, iteration)
             if self.curr_iters % self.trigger_freq == 0:
                 self.log_data(key, val, self.curr_iters)
 

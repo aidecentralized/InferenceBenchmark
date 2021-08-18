@@ -35,10 +35,11 @@ class Utils():
             return model
 
     def get_data(self, sample):
-        data = Variable(sample["img"]).to(self.device)
-        prediction_labels = Variable(sample["prediction_label"]).to(self.device)
-        protected_labels = Variable(sample["private_label"]).to(self.device)
-        return data, prediction_labels, protected_labels
+        items = {}
+        items["x"] = Variable(sample["img"]).to(self.device)
+        items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
+        items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
+        return items
 
     def copy_source_code(self, path):
         print("exp path:", path)

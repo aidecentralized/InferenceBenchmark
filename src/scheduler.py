@@ -29,18 +29,18 @@ class Scheduler():
         self.algo.train()
         self.model.train()
         for batch_idx, sample in enumerate(self.dataloader.train):
-            data, pred_lbls, privt_lbls = self.utils.get_data(sample)
-            z = self.algo.forward(data)
-            grads = self.model.processing(z, pred_lbls)
-            self.algo.backward(grads, privt_lbls)
+            items = self.utils.get_data(sample)
+            z = self.algo.forward(items)
+            items["server_grads"] = self.model.processing(z, items["pred_lbls"])
+            self.algo.backward(items)
 
     def test(self) -> None:
         self.algo.eval()
         self.model.eval()
         for batch_idx, sample in enumerate(self.dataloader.test):
-            data, pred_lbls, _ = self.utils.get_data(sample)
-            z = self.algo.forward(data)
-            self.model.processing(z, pred_lbls)
+            items = self.utils.get_data(sample)
+            z = self.algo.forward(items)
+            self.model.processing(z, items["pred_lbls"])
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()
@@ -50,6 +50,6 @@ class Scheduler():
         self.algo.eval()
         self.model.eval()
         for batch_idx, sample in enumerate(self.dataloader.test):
-            data, pred_lbls, privt_lbls = self.utils.get_data(sample)
-            z = self.algo.forward(data)
-            self.utils.save_data(z, pred_lbls)
+            items = self.utils.get_data(sample)
+            z = self.algo.forward(items)
+            self.utils.save_data(z, items["prvt_lbls"])
