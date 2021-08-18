@@ -7,7 +7,6 @@ class Model(nn.Module):
     def __init__(self, config, utils):
         super(Model, self).__init__()
         self.loss_fn = nn.CrossEntropyLoss()
-        self.split_layer = config["split_layer"]
         self.utils = utils
         self.loss_tag = "server_loss"
         self.acc_tag = "server_acc"
@@ -28,17 +27,26 @@ class Model(nn.Module):
         self.model.eval()
 
     def assign_model(self, config):
-        pretrained = config["pretrained"]
         logits = config["logits"]
-        if config["model_name"] == "resnet18":
-            model = models.resnet18(pretrained=pretrained)
-            num_ftrs = model.fc.in_features
-            model.fc = nn.Sequential(nn.Flatten(),
-                                     nn.Linear(num_ftrs, logits))
-            model = nn.ModuleList(list(model.children())[self.split_layer:])
-            self.model = nn.Sequential(*model)
-            self.model = self.utils.model_on_gpus(self.model)
+        if config["model_name"] == "feed_forward":
+            layer_list = []
+            for l in range(config["num_layers"] - 1):
+                layer_list.append(nn.Linear(logits[l], logits[l+1]))
+            layer_list.append(nn.Linear(logits[l], logits[l+1]))
+            self.model = nn.Sequential(*nn.ModuleList(layer_list))
+        else:
+            pretrained = config["pretrained"]
+            self.split_layer = config["split_layer"]
+            if config["model_name"] == "resnet18":
+                pretrained = config["pretrained"]
+                model = models.resnet18(pretrained=pretrained)
+                num_ftrs = model.fc.in_features
+                model.fc = nn.Sequential(nn.Flatten(),
+                                        nn.Linear(num_ftrs, logits))
+                model = nn.ModuleList(list(model.children())[self.split_layer:])
+                self.model = nn.Sequential(*model)
 
+        self.model = self.utils.model_on_gpus(self.model)
         self.utils.register_model("server_model", self.model)
 
     def assign_optim(self, config):
