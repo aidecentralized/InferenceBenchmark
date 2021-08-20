@@ -61,21 +61,21 @@ class BaseDataset(data.Dataset):
         return sample
 
 
-    # def __getitem__(self, index):
-        filepath = self.filepaths[index]
-        filename = filepath.split('/')[-1].split('.')[0]
-        img = self.load_image(filepath)
-        img = self.transforms(img)
-        pred_label = self.load_label(filepath, "pred")
-        pred_label = self.to_tensor(pred_label)
-        if self.protected_attribute == "data":
-            privacy_label = img
-        else:
-            privacy_label = self.load_label(filepath, "privacy")
-            privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
-        return sample
+    # # def __getitem__(self, index):
+    #     filepath = self.filepaths[index]
+    #     filename = filepath.split('/')[-1].split('.')[0]
+    #     img = self.load_image(filepath)
+    #     img = self.transforms(img)
+    #     pred_label = self.load_label(filepath, "pred")
+    #     pred_label = self.to_tensor(pred_label)
+    #     if self.protected_attribute == "data":
+    #         privacy_label = img
+    #     else:
+    #         privacy_label = self.load_label(filepath, "privacy")
+    #         privacy_label = self.to_tensor(privacy_label)
+    #     sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
+    #         'filepath': filepath, 'filename': filename}
+    #     return sample
 
     def __len__(self):
         return len(self.filepaths)
@@ -262,59 +262,6 @@ class CelebA(datasets.CelebA):
                   'filename': filename}
         return sample
 
-# class BaseDataset2(data.Dataset):
-    """docstring for BaseDataset"""
-
-    def __init__(self, config):
-        super(BaseDataset2, self).__init__()
-        self.format = config["format"]
-        self.set_indicies(config["path"])
-        self.transforms = config["transforms"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.config = config
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-
-    def set_indicies(self, path):
-        filepaths = path + "/*.{}".format(self.format)
-        num_of_images = self.data_to_run_on['set'].data.shape[0]
-        self.indicies = [i for i in range(num_of_images)]
-
-    def load_image(self, i):
-        img = Image.fromarray(self.data_to_run_on['set'].data[i])
-        return img
-
-    @staticmethod
-    def to_tensor(obj):
-        return torch.tensor(obj)
-
-    @abstractmethod
-    def load_label(self):
-        pass
-
-    def __getitem__(self, index):
-        filepath = self.indicies[index]
-        if self.config["train"] is True:
-            filename = "train/"+str(filepath)+".jpg"
-        else:
-            filename = "val/"+str(filepath)+".jpg"
-        img = self.load_image(filepath)
-        img = self.transforms(img)
-        pred_label = self.load_label(filepath, "pred")
-        pred_label = self.to_tensor(pred_label)
-        if self.protected_attribute == "data":
-            privacy_label = img
-        else:
-            privacy_label = self.load_label(filepath, "privacy")
-            privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
-        return sample
-
-    def __len__(self):
-        return len(self.indicies)
 
 class Cifar10_2(BaseDataset):
     """docstring for Cifar10"""
@@ -362,57 +309,6 @@ class Cifar10_2(BaseDataset):
             return d
         except:
             return 1, 1
-
-# class BaseDataset3(data.Dataset):
-    """docstring for BaseDataset"""
-
-    def __init__(self, config):
-        super(BaseDataset3, self).__init__()
-        self.format = config["format"]
-        self.set_indicies(config["path"])
-        self.transforms = config["transforms"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.config = config
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-
-    def set_indicies(self, path):
-        filepaths = path + "/*.{}".format(self.format)
-        num_of_images = self.data_to_run_on['set'].data.shape[0]
-        self.indicies = [i for i in range(num_of_images)]
-
-    def load_image(self, i):
-        img = Image.fromarray(self.data_to_run_on['set'].data[i])
-        return img
-
-    @staticmethod
-    def to_tensor(obj):
-        return torch.tensor(obj)
-
-    @abstractmethod
-    def load_label(self):
-        pass
-
-    def __getitem__(self, index):
-        filepath = self.indicies[index]
-        filename = "challenge/"+str(filepath)+".jpg"
-        img = self.load_image(filepath)
-        img = self.transforms(img)
-        pred_label = self.load_label(filepath, "pred")
-        pred_label = self.to_tensor(pred_label)
-        if self.protected_attribute == "data":
-            privacy_label = img
-        else:
-            privacy_label = self.load_label(filepath, "privacy")
-            privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
-        return sample
-
-    def __len__(self):
-        return len(self.indicies)
 
 class Cifar10_3(BaseDataset):
     """docstring for Cifar10, challenge loader"""
