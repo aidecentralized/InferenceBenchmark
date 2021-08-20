@@ -3,6 +3,8 @@ from algos.nopeek import NoPeek
 from algos.uniform_noise import UniformNoise
 from algos.siamese_embedding import SiameseEmbedding
 from algos.pca_embedding import PCAEmbedding
+from algos.deepobfuscator import DeepObfuscator
+from algos.pan import PAN
 from data.loaders import DataLoader
 from models.model_zoo import Model
 from utils.utils import Utils
@@ -37,6 +39,10 @@ def load_algo(config, utils):
         algo = SiameseEmbedding(config["client"], utils)
     elif method == "pca_embedding":
         algo = PCAEmbedding(config["client"], utils)
+    elif method == "deep_obfuscator":
+        algo = DeepObfuscator(config["client"], utils)
+    elif method == "pan":
+        algo = PAN(config["client"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
         exit()
