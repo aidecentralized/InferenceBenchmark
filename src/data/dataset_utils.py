@@ -37,6 +37,31 @@ class BaseDataset(data.Dataset):
         pass
 
     def __getitem__(self, index):
+        filepath = self.indicies[index]
+        if self.config["train"] is True:
+            filename = "train/"+str(filepath)+".jpg"
+        elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
+            filename = "challenge/"+str(filepath)+".jpg"
+        elif: self.config["val"] is True:
+            filename = "val/"+str(filepath)+".jpg"
+        else:
+            filename = filepath.split('/')[-1].split('.')[0]
+            
+        img = self.load_image(filepath)
+        img = self.transforms(img)
+        pred_label = self.load_label(filepath, "pred")
+        pred_label = self.to_tensor(pred_label)
+        if self.protected_attribute == "data":
+            privacy_label = img
+        else:
+            privacy_label = self.load_label(filepath, "privacy")
+            privacy_label = self.to_tensor(privacy_label)
+        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
+            'filepath': filepath, 'filename': filename}
+        return sample
+
+
+    # def __getitem__(self, index):
         filepath = self.filepaths[index]
         filename = filepath.split('/')[-1].split('.')[0]
         img = self.load_image(filepath)
@@ -237,7 +262,7 @@ class CelebA(datasets.CelebA):
                   'filename': filename}
         return sample
 
-class BaseDataset2(data.Dataset):
+# class BaseDataset2(data.Dataset):
     """docstring for BaseDataset"""
 
     def __init__(self, config):
@@ -291,7 +316,7 @@ class BaseDataset2(data.Dataset):
     def __len__(self):
         return len(self.indicies)
 
-class Cifar10_2(BaseDataset2):
+class Cifar10_2(BaseDataset):
     """docstring for Cifar10"""
 
     def __init__(self, config):
@@ -338,7 +363,7 @@ class Cifar10_2(BaseDataset2):
         except:
             return 1, 1
 
-class BaseDataset3(data.Dataset):
+# class BaseDataset3(data.Dataset):
     """docstring for BaseDataset"""
 
     def __init__(self, config):
@@ -389,7 +414,7 @@ class BaseDataset3(data.Dataset):
     def __len__(self):
         return len(self.indicies)
 
-class Cifar10_3(BaseDataset3):
+class Cifar10_3(BaseDataset):
     """docstring for Cifar10, challenge loader"""
 
     def __init__(self, config):
