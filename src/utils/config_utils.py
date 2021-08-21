@@ -28,7 +28,7 @@ def config_loader(filepath):
 
     json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
     json_dict['train_batch_size'] = json_dict.get('train_batch_size', 64) * json_dict['num_gpus']
-
+    json_dict['experiment_type'] = json_dict.get('experiment_type') or "defense"
 
     if 'manual_expt_name' in json_dict.keys():
         '''serves two use cases - generating challenge for past experiments which followed different
