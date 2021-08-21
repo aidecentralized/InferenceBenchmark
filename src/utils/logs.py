@@ -6,9 +6,10 @@ import numpy as np
 
 
 class Logs():
-    def __init__(self, config):
-        self.init_tb(config)
-        self.init_logfile(config)
+    def __init__(self, config, challenge=False):
+        if not challenge:
+            self.init_tb(config)
+        self.init_logfile(config, challenge)
         self.epoch = 0
         self.curr_iters = 0
         self.total_epochs = config["total_epochs"]
@@ -25,13 +26,14 @@ class Logs():
         self.trigger_freq = total_iters // log_freq
         self.total_iters = total_iters
 
-    def init_logfile(self, config):
+    def init_logfile(self, config, challenge):
         self.log_path = config["log_path"]
         self.log_format = "%(asctime)s::%(levelname)s::%(name)s::"\
                           "%(filename)s::%(lineno)d::%(message)s"
-        logging.basicConfig(filename="{log_path}/log_console.log".format(
-                                                  log_path=self.log_path),
-                            level='DEBUG', format=self.log_format)
+        if not challenge:
+            logging.basicConfig(filename="{log_path}/log_console.log".format(
+                                                     log_path=self.log_path),
+                                level='DEBUG', format=self.log_format)
         logging.getLogger().addHandler(logging.StreamHandler())
 
     def init_tb(self, config):
