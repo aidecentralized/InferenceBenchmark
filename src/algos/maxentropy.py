@@ -2,12 +2,12 @@ from algos.deepobfuscator import DeepObfuscator
 from utils.metrics import MetricLoader
 
 
-class naxentropy(DeepObfuscator):
+class maxentropy(DeepObfuscator):
     """ The only difference between maxentropy and Deepobfuscator
     is the loss function for the proxy adversary and the label is the private attribute instead of reconstruction.
     """
     def __init__(self, config, utils) -> None:
-        super(PAN, self).__init__(config, utils)
+        super(maxentropy, self).__init__(config, utils)
         self.update_loss()
 
     def update_loss(self):
