@@ -31,14 +31,13 @@ class SupervisedDecoder(SimbaAttack):
     def forward(self, items):
         z = items["z"]
         self.x = self.model(z)
+        x = items["x"]
+
+        self.loss = self.loss_fn(self.x, x)
+        self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
+                                    self.loss.item())
 
     def backward(self, items):
-        x = items["x"]
-        loss = self.loss_fn(self.x, x)
-
         self.optim.zero_grad()
-        (self.sign * loss).backward()
+        (self.sign * self.loss).backward()
         self.optim.step()
-
-        self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
-                                    loss.item())
