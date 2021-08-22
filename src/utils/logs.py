@@ -6,10 +6,11 @@ import numpy as np
 
 
 class Logs():
-    def __init__(self, config, challenge=False):
-        if not challenge:
+    def __init__(self, config, exp_type):
+        ischallenge = exp_type == "challenge"
+        if not ischallenge:
             self.init_tb(config)
-        self.init_logfile(config, challenge)
+        self.init_logfile(config, ischallenge)
         self.epoch = 0
         self.curr_iters = 0
         self.total_epochs = config["total_epochs"]

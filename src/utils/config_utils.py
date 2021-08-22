@@ -35,7 +35,7 @@ def config_loader(filepath):
         naming convention. The other case is when we want to transfer a pretrained pruner network to
         a different client model.'''
         experiment_name = json_dict['manual_expt_name']
-    else:
+    elif json_dict["experiment_type"] in ["defense" or "challenge"]:
         experiment_name = "{}_{}_{}_{}_split{}_{}".format(
             json_dict['method'],
             json_dict['dataset'],
@@ -49,6 +49,21 @@ def config_loader(filepath):
             key = exp_key.split(".")[-1]
             assert key is not None
             experiment_name += "_{}_{}".format(key, item)
+    else:
+        assert json_dict['experiment_type'] == "attack"
+        experiment_name = "{}_{}_{}".format(
+            json_dict['method'],
+            json_dict['challenge_experiment'],
+            json_dict['exp_id'])
+        for exp_key in json_dict["exp_keys"]:
+            item = jmespath.search(exp_key, json_dict)
+            assert item is not None
+            key = exp_key.split(".")[-1]
+            assert key is not None
+            experiment_name += "_{}_{}".format(key, item)
+        json_dict['challenge_dir'] = json_dict['experiments_folder'] +\
+                                     json_dict['challenge_experiment'] +\
+                                     "/challenge/"
 
     experiments_folder = json_dict["experiments_folder"]
     results_path = experiments_folder + experiment_name
