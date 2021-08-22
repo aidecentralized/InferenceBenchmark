@@ -36,10 +36,14 @@ class Utils():
 
     def get_data(self, sample):
         items = {}
-        items["x"] = Variable(sample["img"]).to(self.device)
-        items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
-        items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
-        items["filename"] = sample["filename"]
+        if self.config["experiment_type"] == "attack":
+            items["z"] = Variable(sample["z"]).to(self.device)
+            items["x"] = Variable(sample["x"]).to(self.device)
+        else:
+            items["x"] = Variable(sample["img"]).to(self.device)
+            items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
+            items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
+            items["filename"] = sample["filename"]
         return items
 
     def copy_source_code(self, path):

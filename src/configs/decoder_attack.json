@@ -1,0 +1,17 @@
+{
+    "experiment_type": "attack",
+    "method": "supervised_decoder",
+    "adversary": {"loss_fn": "ssim", "img_size": 128,
+                  "optimizer": "adam", "lr": 0.01, "attribute": "data"},
+    "total_epochs": 150,
+    "training_batch_size": 128,
+    "challenge_experiment": "pan_fairface_data_resnet18_split6_1_alpha_0.9",
+    "protected_attribute": "data",
+    "dataset": "fairface",
+    "exp_id": "1",
+    "img_size": 128,
+    "split": true,
+    "train_split": 0.9,
+    "test_batch_size": 64,
+    "exp_keys": ["train_split", "adversary.loss_fn"]
+}
