@@ -5,6 +5,7 @@ from algos.siamese_embedding import SiameseEmbedding
 from algos.pca_embedding import PCAEmbedding
 from algos.deepobfuscator import DeepObfuscator
 from algos.pan import PAN
+from algos.supervised_decoder import SupervisedDecoder
 from data.loaders import DataLoader
 from models.model_zoo import Model
 from utils.utils import Utils
@@ -27,7 +28,7 @@ def load_utils(config):
     return Utils(config)
 
 
-def load_algo(config, utils):
+def load_algo(config, utils, dataloader=None):
     method = config["method"]
     if method == "split_inference":
         algo = SplitInference(config["client"], utils)
@@ -43,6 +44,12 @@ def load_algo(config, utils):
         algo = DeepObfuscator(config["client"], utils)
     elif method == "pan":
         algo = PAN(config["client"], utils)
+    elif method == "supervised_decoder":
+        item = next(iter(dataloader))
+        z = item["z"]
+        config["adversary"]["channels"] = z.shape[1]
+        config["adversary"]["patch_size"] = z.shape[2]
+        algo = SupervisedDecoder(config["adversary"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
         exit()

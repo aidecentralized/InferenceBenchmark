@@ -56,8 +56,9 @@ class BaseDataset(data.Dataset):
         else:
             privacy_label = self.load_label(filepath, "privacy")
             privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
+        sample = {'img': img, 'prediction_label': pred_label,
+                  'private_label': privacy_label,
+                  'filepath': filepath, 'filename': filename}
         return sample
 
 
@@ -358,3 +359,53 @@ def load_challenge_data_set(experiment_path):
     log_dir = os.path.join(experiment_path, "logs")
     pts = {int(i.split(".")[0]): str(i) for i in sorted(os.listdir(challenge_dir), key=lambda s: int(s.split(".")[0]))}
     return pts
+
+
+class Challenge(BaseDataset):
+    """ For loading datasets from the challenge directory
+    """
+    def __init__(self, config):
+        self.img_dir = config["path"]
+        self.format = "pt" # hardcoded for now
+        self.set_filepaths(config["challenge_dir"])
+        self.protected_attribute = config["protected_attribute"]
+
+        if config["dataset"] == "fairface":
+            self.dataset_obj = FairFace(config)
+        else:
+            print("not implemented yet")
+            exit()
+
+    def load_image(self, filepath):
+        return self.dataset_obj.load_image(filepath)
+
+    def load_label(self, filepath, label_type):
+        return self.dataset_obj.load_label(filepath, label_type)
+
+    def load_tensor(self, fpath):
+        return torch.load(fpath)
+
+    def get_imgpath(self, filename):
+        """ The challenge folder only consists of filename
+        but the corresponding file in the dataset is obtained here
+        """
+        filename = "/" + filename + "." + self.dataset_obj.format
+        l = list(filter(lambda x: x.endswith(filename),
+                   self.dataset_obj.filepaths))
+        assert len(l) == 1
+        return l[0]
+
+    def __getitem__(self, index):
+        filepath = self.filepaths[index]
+        filename = filepath.split('/')[-1].split('.')[0]
+        z = self.load_tensor(filepath)
+        imgpath = self.get_imgpath(filename)
+        if self.protected_attribute == "data":
+            img = self.load_image(imgpath)
+            privacy_label = self.dataset_obj.transforms(img)
+        else:
+            privacy_label = self.load_label(imgpath, "privacy")
+            privacy_label = self.to_tensor(privacy_label)
+        sample = {"z": z, "x": privacy_label, "filename": filename}
+        return sample
+

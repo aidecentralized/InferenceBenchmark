@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torchvision import transforms
 from data.dataset_utils import FairFace, CelebA, Cifar10_2, LFW#, UTKFace
-
+from data.dataset_utils import Challenge
 
 class DataLoader():
     def __init__(self, config):
@@ -26,16 +26,30 @@ class DataLoader():
             transforms.Resize((self.IM_SIZE, self.IM_SIZE)),
             transforms.ToTensor()])
 
-        train_config = {"transforms": trainTransform,
-                        "train": True,
+        isattack = self.config["experiment_type"] == "attack"
+        if isattack:
+            config = {
+                "transforms": trainTransform,
+                "train": False,
+                "path": self.config["dataset_path"],
+                "prediction_attribute": "data",
+                "protected_attribute": self.config["protected_attribute"],
+                "challenge_dir": self.config["challenge_dir"],
+                "dataset": self.config["dataset"]
+            }
+            # Attack mode only uses test dataset. We will split it below
+            train_config, test_config = config, config
+        else:
+            train_config = {"transforms": trainTransform,
+                            "train": True,
+                            "path": self.config["dataset_path"],
+                            "prediction_attribute": self.config["prediction_attribute"],
+                            "protected_attribute": self.config["protected_attribute"]}
+            test_config = {"transforms": trainTransform,
+                        "train": False,
                         "path": self.config["dataset_path"],
                         "prediction_attribute": self.config["prediction_attribute"],
                         "protected_attribute": self.config["protected_attribute"]}
-        test_config = {"transforms": trainTransform,
-                       "train": False,
-                       "path": self.config["dataset_path"],
-                       "prediction_attribute": self.config["prediction_attribute"],
-                       "protected_attribute": self.config["protected_attribute"]}
 
         if self.config["dataset"] == "fairface":
             train_config["format"] = "jpg"
@@ -58,8 +72,14 @@ class DataLoader():
         elif self.config["dataset"] == "UTKFace":
             train_config["format"] = "jpg"
             dataset = UTKFace(train_config)
-        if self.config["split"] is True:
-            train_dataset, test_dataset = self.get_split(dataset) 
+
+        if self.config["split"] is True and not isattack:
+            train_dataset, test_dataset = self.get_split(dataset)
+
+
+        if isattack:
+            dataset = Challenge(train_config)
+            train_dataset, test_dataset = self.get_split(dataset)
 
         self.trainloader = torch.utils.data.DataLoader(
             train_dataset, batch_size=self.config["train_batch_size"],

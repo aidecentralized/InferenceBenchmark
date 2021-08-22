@@ -1,4 +1,5 @@
 {
+    "experiment_type": "challenge",
     "method": "pan",
     "client": {"model_name": "resnet18", "split_layer": 6,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,

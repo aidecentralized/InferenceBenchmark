@@ -22,7 +22,7 @@ class Utils():
             self.device = torch.device('cpu')
 
     def init_logger(self):
-        self.logger = Logs(self.config)
+        self.logger = Logs(self.config, self.config["experiment_type"])
 
     def model_on_gpus(self, model):
         total_gpus = len(self.gpu_devices)
@@ -36,9 +36,14 @@ class Utils():
 
     def get_data(self, sample):
         items = {}
-        items["x"] = Variable(sample["img"]).to(self.device)
-        items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
-        items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
+        if self.config["experiment_type"] == "attack":
+            items["z"] = Variable(sample["z"]).to(self.device)
+            items["x"] = Variable(sample["x"]).to(self.device)
+        else:
+            items["x"] = Variable(sample["img"]).to(self.device)
+            items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
+            items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
+            items["filename"] = sample["filename"]
         return items
 
     def copy_source_code(self, path):
@@ -67,6 +72,24 @@ class Utils():
 
         # For saving models in the future
         os.mkdir(self.config.get('model_path'))
+
+    def make_challenge_dir(self, path):
+        folder_name = "/challenge/"
+        challenge_dir = path + folder_name
+        if os.path.isdir(challenge_dir):
+            print("Challenge at {} already present".format(challenge_dir))
+            inp = input("Press e to exit, r to replace it: ")
+            if inp == "e":
+                exit()
+            elif inp == "r":
+                shutil.rmtree(challenge_dir)
+        os.mkdir(challenge_dir)
+        return challenge_dir
+
+    def save_data(self, z, filename, challenge_dir):
+        for ele in range(int(z.shape[0])):
+            z_path = challenge_dir + filename[ele] + '.pt'
+            torch.save(z[ele].detach().cpu(), z_path)
 
     def check_path_status(self, path):
         """experiment_path = None
@@ -109,3 +132,13 @@ class Utils():
                 state_dict = model.state_dict()
             self._save_model(state_dict, model_path)
         self.logger.log_console("models saved")
+
+    def load_saved_models(self):
+        for model_name, model in self.model_registry.items():
+            model_path = self.config["model_path"] + "/{}.pt".format(model_name)
+            wts = torch.load(model_path)
+            if isinstance(model, nn.DataParallel):
+                model.module.load_state_dict(wts)
+            else:
+                model.load_state_dict(wts)
+        self.logger.log_console("models loaded")

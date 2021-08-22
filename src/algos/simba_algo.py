@@ -5,9 +5,9 @@ from abc import abstractmethod
 
 
 class SimbaDefence(nn.Module):
-    def __init__(self, utils_object):
+    def __init__(self, utils):
         super(SimbaDefence, self).__init__()
-        self.utils = utils_object
+        self.utils = utils
 
     @abstractmethod
     def forward(self):
@@ -52,8 +52,9 @@ class SimbaDefence(nn.Module):
 
 
 class SimbaAttack(nn.Module):
-    def __init__(self):
+    def __init__(self, utils):
         super(SimbaAttack, self).__init__()
+        self.utils = utils
 
     @abstractmethod
     def forward(self):
@@ -62,3 +63,27 @@ class SimbaAttack(nn.Module):
     @abstractmethod
     def backward(self):
         pass
+
+    def train(self):
+        self.mode = "train"
+        self.model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.model.eval()
+
+    def init_optim(self, config, model):
+        if config["optimizer"] == "adam":
+            optim = torch.optim.Adam(model.parameters(), lr=config["lr"])
+        else:
+            print("Unknown optimizer {}".format(config["optimizer"]))
+
+        return optim
+
+    def train(self):
+        self.mode = "train"
+        self.model.train()
+
+    def eval(self):
+        self.mode = "val"
+        self.model.eval()
