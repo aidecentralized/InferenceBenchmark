@@ -154,17 +154,6 @@ class Cifar10(BaseDataset):
         config = deepcopy(config)
         self.prediction_attribute = config["prediction_attribute"]
         self.protected_attribute = config["protected_attribute"]
-        # try:
-        #     if config["train"] is True:
-        #         label_csv = pd.read_csv(config["path"] +
-        #                                 "cifar10_label_train.csv")
-        #         config["path"] += "/train"
-        #     else:
-        #         label_csv = pd.read_csv(config["path"] + "cifar10_label_val.csv")
-        #         config["path"] += "/val"
-        #     self.label_csv = label_csv.set_index("file")
-        # except:
-        #     self.label_csv = None
 
         self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
         self.data_to_run_on = None
