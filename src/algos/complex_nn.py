@@ -20,7 +20,8 @@ class ComplexNN(SimbaDefence):
 
     def initialize(self, config):
         self.encoder_model,self.decoder_model = self.init_client_model(config)
-        size = get_encoder_output_size(self.encoder_model, (3,32,32))
+        img_size = config["img_size"]
+        size = get_encoder_output_size(self.encoder_model, (3,img_size,img_size))
         self.discriminator = Discriminator(size=size)
         models = [self.encoder_model, self.decoder_model, self.discriminator]
         self.put_on_gpus(models)
