@@ -5,6 +5,7 @@ from algos.siamese_embedding import SiameseEmbedding
 from algos.pca_embedding import PCAEmbedding
 from algos.deepobfuscator import DeepObfuscator
 from algos.pan import PAN
+from algos.complex_nn import ComplexNN
 from algos.supervised_decoder import SupervisedDecoder
 from data.loaders import DataLoader
 from models.model_zoo import Model
@@ -38,6 +39,8 @@ def load_algo(config, utils, dataloader=None):
         algo = UniformNoise(config["client"], utils)
     elif method == "siamese_embedding":
         algo = SiameseEmbedding(config["client"], utils)
+    elif method == "complex_nn":
+        algo = ComplexNN(config["client"], utils)
     elif method == "pca_embedding":
         algo = PCAEmbedding(config["client"], utils)
     elif method == "deep_obfuscator":

@@ -57,7 +57,9 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.train):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
-            items["server_grads"] = self.model.processing(z, items["pred_lbls"])
+            data = self.model.forward(z)
+            decoder_loss = self.algo.infer(data,items["pred_lbls"])
+            items["server_grads"] = self.model.backward(items["pred_lbls"],decoder_loss)
             self.algo.backward(items)
 
     def defense_test(self) -> None:
@@ -66,7 +68,8 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
-            self.model.processing(z, items["pred_lbls"])
+            data = self.model.forward(z)
+            self.algo.infer(data,items["pred_lbls"])
 
     def attack_train(self) -> None:
         self.algo.train()

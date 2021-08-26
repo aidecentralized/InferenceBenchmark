@@ -1,0 +1,19 @@
+{
+    "method": "complex_nn",
+    "client": {"model_name": "resnet20complex", "split_layer": 6,
+               "pretrained": false,"logits": 2, "optimizer": "adam", "lr": 3e-4,
+               "alpha": 0.9,"k":5, "momentum": 0.9, "weight_decay": 0.0001},
+    "server": {"model_name": "resnet20complex", "split_layer":6, "logits": 2, "pretrained": false,
+               "lr": 3e-4, "optimizer": "adam", "momentum": 0.9, "weight_decay": 0.0001},
+    "learning_rate": 0.1,
+    "total_epochs": 95,
+    "training_batch_size": 128,
+    "dataset": "cifar10",
+    "protected_attribute": "class",
+    "prediction_attribute": "animated",
+    "img_size": 32,
+    "split": false,
+    "test_batch_size": 128,
+    "exp_id": "1",
+    "exp_keys": ["client.alpha","client.optimizer"]
+}
