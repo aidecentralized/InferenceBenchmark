@@ -14,7 +14,15 @@ There are two separate configuration files that are used to specify a benchmark.
 There are three different modes in which these experiments can be performed - "defense", "challenge", "attack". This has to be specified in the key `experiment_type`. By default, the `experiment_type` is set as "defense".
 ## Models
 Currently supports ResNet-18 for different mechanisms with varying `split_layer`.
+
 ## Datasets
+1. CelebA
+2. FairFace
+3. CIFAR10
+4. UTKFace
+5. Labeled Faces in the Wild (LFW)
+
+
 ## Algorithms
 Currently supported algorithms on the defense side include. These algorithms work for variable number of client side `split_layer`.
 1. Split Inference `split_inference.json`
@@ -22,6 +30,12 @@ Currently supported algorithms on the defense side include. These algorithms wor
 3. NoPeek `nopeek.json`
 4. Siamese Embedding `siamese_embedding.json`
 5. PCA Embedding `pca_embedding.json`
+6. PAN `pan.json`
+7. Complex neural networks
+8. Deep Obfuscator `deep_obfuscator.json`
+9. Gaussian Blur `gaussian_blur.json`
+10. Linear Correlation `linear_correlation.json`
+11. Decoder Attack `decoder_attack.json`
 
 ### Writing your own algorithm
 Most of the code in the algos is modular enough for a user to only focus on writing the important part of the mechanism and rest all functions automatically. Implementor of a mechanism just needs to inherit the `SimbaDefense` class from `algos.simba_algo`. A user can also build upon existing mechanisms by inheriting them and overriding a particular function of the algorithm.
