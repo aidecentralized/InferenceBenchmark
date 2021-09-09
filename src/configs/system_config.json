@@ -1,5 +1,5 @@
 {
-    "dataset_path": "/Users/rohansukumaran/open_lth_datasets/cifar10/",
-    "experiments_folder": "/Users/rohansukumaran/simba/experiments/",
+    "dataset_path": "/u/abhi24/Datasets/Faces/fairface/",
+    "experiments_folder": "/u/abhi24/Workspace/simba/experiments/",
     "gpu_devices": [2,3]
 }
