@@ -33,6 +33,12 @@ class SimbaDefence(nn.Module):
         if config["model_name"] == "resnet18":
             model = models.resnet18(pretrained=config["pretrained"])
             model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+        elif config["model_name"] == "resnet34":
+            model = models.resnet34(pretrained=config["pretrained"])
+            model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+        elif config["model_name"] == "resnet50":
+            model = models.resnet50(pretrained=config["pretrained"])
+            model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
         else:
             print("can't find client model")
             exit()

@@ -83,10 +83,10 @@ class DataLoader():
 
         self.trainloader = torch.utils.data.DataLoader(
             train_dataset, batch_size=self.config["train_batch_size"],
-            shuffle=True, num_workers=5, drop_last=True)
+            shuffle=True, num_workers=0, drop_last=True)
 
         self.testloader = torch.utils.data.DataLoader(
             test_dataset, batch_size=self.config["test_batch_size"],
-            shuffle=False, num_workers=5, drop_last=True)
+            shuffle=False, num_workers=0, drop_last=True)
 
         return self.trainloader, self.testloader

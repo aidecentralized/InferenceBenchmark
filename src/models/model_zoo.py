@@ -45,6 +45,26 @@ class Model(nn.Module):
                                         nn.Linear(num_ftrs, logits))
                 model = nn.ModuleList(list(model.children())[self.split_layer:])
                 self.model = nn.Sequential(*model)
+            elif config["model_name"] == "resnet34":
+                pretrained = config["pretrained"]
+                model = models.resnet34(pretrained=pretrained)
+                num_ftrs = model.fc.in_features
+                model.fc = nn.Sequential(nn.Flatten(),
+                                        nn.Linear(num_ftrs, logits))
+                model = nn.ModuleList(list(model.children())[self.split_layer:])
+                self.model = nn.Sequential(*model)
+            elif config["model_name"] == "resnet50":
+                pretrained = config["pretrained"]
+                model = models.resnet50(pretrained=pretrained)
+                num_ftrs = model.fc.in_features
+                model.fc = nn.Sequential(nn.Flatten(),
+                                        nn.Linear(num_ftrs, logits))
+                model = nn.ModuleList(list(model.children())[self.split_layer:])
+                self.model = nn.Sequential(*model)
+            else:
+                pass  
+
+
 
         self.model = self.utils.model_on_gpus(self.model)
         self.utils.register_model("server_model", self.model)
