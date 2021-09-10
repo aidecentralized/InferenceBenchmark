@@ -15,7 +15,8 @@ class Logs():
         self.curr_iters = 0
         self.total_epochs = config["total_epochs"]
         self.items = {}
-        self.metrics = MetricLoader()
+        self.metrics = MetricLoader() 
+        # self.metrics = MetricLoader(device = "cpu") # need to pass device as CPU to not throw errors in non-CUDA machines
 
     def register_tag(self, key):
         if self.items.get(key) is not None:

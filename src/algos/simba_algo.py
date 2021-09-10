@@ -32,10 +32,17 @@ class SimbaDefence(nn.Module):
     def init_client_model(self, config):
         if config["model_name"] == "resnet18":
             model = models.resnet18(pretrained=config["pretrained"])
-            model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+        elif config["model_name"] == "resnet34":
+            model = models.resnet34(pretrained=config["pretrained"])
+        elif config["model_name"] == "resnet50":
+            model = models.resnet50(pretrained=config["pretrained"])
         else:
             print("can't find client model")
             exit()
+        
+        if config["model_name"].startswith("resnet"):
+            model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+
 
         return model
 

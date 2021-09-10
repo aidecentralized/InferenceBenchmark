@@ -1,0 +1,5 @@
+{
+    "dataset_path": "/Users/rohansukumaran/open_lth_datasets/cifar10/",
+    "experiments_folder": "/Users/rohansukumaran/simba/experiments/",
+    "gpu_devices": [2,3]
+}
