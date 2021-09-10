@@ -37,6 +37,38 @@ Currently supported algorithms on the defense side include. These algorithms wor
 10. Linear Correlation `linear_correlation.json`
 11. Decoder Attack `decoder_attack.json`
 
+## Config Files
+There are primarily 2 config files -> system configs (-s) and experiment config (-b)
+
+#### Experiment config
+`method` : `split_inference` 
+`experiment_type` : We can use one of "attack", "defence" and "challenge" based on the type of experiment
+`client`: 
+      {"model_name": "resnet34", #replace this with any available model - restnet18, resnet50 etc
+      "split_layer": 6, # change the number here to determine how many layers remain with the client
+      "pretrained": false, 
+      "optimizer": "adam", 
+      "lr": 3e-4},
+`server`: 
+      {"model_name": "resnet34", 
+      "split_layer":6, 
+      "logits": 2, # update this based on the dataset used
+      "pretrained": false,
+      "lr": 3e-4, 
+      "optimizer": "adam"},
+     
+ "learning_rate": 0.01,
+ "total_epochs": 150,
+ "training_batch_size": 128,
+ "dataset": "cifar10",
+ "protected_attribute": "data", # here the entire data is considered private, that is, we are looking at data reconstruction attacks. We can also assign other classes as private/protected attribute as well
+ "prediction_attribute": "class",
+ "exp_id": "1",
+ "img_size": 128,
+ "split": false,
+ "test_batch_size": 64,
+ "exp_keys": []
+
 ### Writing your own algorithm
 Most of the code in the algos is modular enough for a user to only focus on writing the important part of the mechanism and rest all functions automatically. Implementor of a mechanism just needs to inherit the `SimbaDefense` class from `algos.simba_algo`. A user can also build upon existing mechanisms by inheriting them and overriding a particular function of the algorithm.
 ## Evaluation
