@@ -2,7 +2,7 @@
     "method": "nopeek",
     "client": {"model_name": "resnet18", "split_layer": 6,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,
-               "alpha": 0.9},
+               "alpha": 0.92},
     "server": {"model_name": "resnet18", "split_layer":6, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},
     "learning_rate": 0.01,

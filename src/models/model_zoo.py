@@ -54,39 +54,21 @@ class Model(nn.Module):
 
     def assign_optim(self, config):
         lr = config["lr"]
-        if config["model_name"] == "resnet20complex":
-            
-            if config["optimizer"] == "adam":
-                self.optim = torch.optim.Adam(
-                    self.model.parameters(),
-                    lr,
-                )
-
-            elif config["optimizer"] == "sgd":
-                self.optim = torch.optim.SGD(
-                    self.model.parameters(),
-                    lr,
-                    momentum = config["momentum"],
-                    weight_decay = config["weight_decay"]
-                )
-        else:
-            if config["optimizer"] == "adam":
-                self.optim = torch.optim.Adam(self.model.parameters(), lr)
+        if config["optimizer"] == "adam":
+            self.optim = torch.optim.Adam(self.model.parameters(), lr)
 
     def forward(self, z):
         self.z = z
         self.z.retain_grad()
         if self.config["model_name"] == "resnet20complex":
-            h = self.model(self.z)
-            assert(h.size(1) == 2)
-            self.preds = None
-            h = h.detach()
+            self.h = self.model(self.z)
+            h = self.h.detach()
             h.requires_grad = True
             return h
         else:
             x = self.model(self.z)
             self.preds = nn.functional.softmax(x, dim=1)
-            return None
+            return self.preds
 
     def compute_loss(self, preds, y):
         if self.config["model_name"] != "resnet20complex":
@@ -95,14 +77,24 @@ class Model(nn.Module):
                                         self.loss.item())
             self.utils.logger.add_entry(self.mode + "/" + self.acc_tag,
                                         (preds, y), "acc")
-    def optimize(self):
-        self.optim.zero_grad()
-        self.loss.backward()
-        self.optim.step()
 
-    def backward(self,y,decoder_loss):
-        self.loss = decoder_loss
-        self.compute_loss(self.preds, y)
-        self.optimize()
+    def optimize(self):
+        if self.config["model_name"] != "resnet20complex":
+            self.optim.zero_grad()
+            self.loss.backward()
+            self.optim.step()
+        else:
+            self.optim.zero_grad()
+            self.h.backward(self.decoder_grads)
+            self.optim.step()
+
+    def backward(self,y,decoder_grads=None):
+        if decoder_grads != None:
+            self.decoder_grads = decoder_grads
+            self.optimize()
+        if self.config["model_name"] != "resnet20complex":
+            self.compute_loss(self.preds, y)
+            self.optimize()
         return self.z.grad
+
 

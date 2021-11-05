@@ -58,8 +58,8 @@ class Scheduler():
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
             data = self.model.forward(z)
-            decoder_loss = self.algo.infer(data,items["pred_lbls"])
-            items["server_grads"] = self.model.backward(items["pred_lbls"],decoder_loss)
+            items["decoder_grads"] = self.algo.infer(data,items["pred_lbls"])
+            items["server_grads"] = self.model.backward(items["pred_lbls"],items["decoder_grads"])
             self.algo.backward(items)
 
     def defense_test(self) -> None:
@@ -70,6 +70,7 @@ class Scheduler():
             z = self.algo.forward(items)
             data = self.model.forward(z)
             self.algo.infer(data,items["pred_lbls"])
+            self.model.compute_loss(data,items["pred_lbls"])
 
     def attack_train(self) -> None:
         self.algo.train()

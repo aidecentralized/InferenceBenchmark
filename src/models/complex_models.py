@@ -104,7 +104,7 @@ class ActivationComplex(nn.Module):
     def forward(self, x):
         x_norm = complex_norm(x).unsqueeze(1)
         c = self.c.to(x.device)
-        scale = x_norm/torch.max(x_norm, c)
+        scale = x_norm/torch.maximum(x_norm, c)
         return x*scale
 
 def activation_complex(x, c):
@@ -121,7 +121,7 @@ def activation_complex(x, c):
     assert(c>0)
     x_norm = complex_norm(x).unsqueeze(1)
     c = torch.Tensor([c]).to(x.device)
-    scale = x_norm/torch.max(x_norm, c)
+    scale = x_norm/torch.maximum(x_norm, c)
     return x*scale
 
 def activation_complex_dynamic(x):
@@ -137,11 +137,11 @@ def activation_complex_dynamic(x):
     x_norm = complex_norm(x)
     if x.dim() == 5:
         # for [b,2,c,h,w] inputs
-        scale = x_norm.unsqueeze(1)/torch.max(x_norm.unsqueeze(1),
+        scale = x_norm.unsqueeze(1)/torch.maximum(x_norm.unsqueeze(1),
                                                   x_norm.mean((2, 3))[:, :, None, None].unsqueeze(1))
     else:
         # for [b,2,f] inputs
-        scale = x_norm.unsqueeze(1)/torch.max(x_norm.unsqueeze(1),
+        scale = x_norm.unsqueeze(1)/torch.maximum(x_norm.unsqueeze(1),
                                                   x_norm.mean(1)[:, None, None])
 
     return x*scale
@@ -159,11 +159,11 @@ def activation_complex_dynamic(x):
     x_norm = complex_norm(x)
     if x.dim() == 5:
         # for [b,2,c,h,w] inputs
-        scale = x_norm.unsqueeze(1)/torch.max(x_norm.unsqueeze(1),
+        scale = x_norm.unsqueeze(1)/torch.maximum(x_norm.unsqueeze(1),
                                                   x_norm.mean((2, 3))[:, :, None, None].unsqueeze(1))
     else:
         # for [b,2,f] inputs
-        scale = x_norm.unsqueeze(1)/torch.max(x_norm.unsqueeze(1),
+        scale = x_norm.unsqueeze(1)/torch.maximum(x_norm.unsqueeze(1),
                                                   x_norm.mean(1)[:, None, None])
 
     return x*scale

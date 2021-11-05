@@ -1,9 +1,8 @@
 {
-    "experiment_type": "challenge",
     "method": "pan",
     "client": {"model_name": "resnet18", "split_layer": 6,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,
-               "alpha": 0.9,
+               "alpha": 0.92,
                "proxy_adversary" : {"img_size": 128}},
     "server": {"model_name": "resnet18", "split_layer":6, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},

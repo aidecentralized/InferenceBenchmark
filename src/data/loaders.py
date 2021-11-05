@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torchvision import transforms
-from data.dataset_utils import FairFace, CelebA, Cifar10_2, LFW#, UTKFace
+from data.dataset_utils import FairFace,Cifar10, CelebA, Cifar10_2, LFW#, UTKFace
 from data.dataset_utils import Challenge
 
 class DataLoader():
@@ -62,8 +62,8 @@ class DataLoader():
         elif self.config["dataset"] == "cifar10":
             train_config["format"] = "jpg"
             test_config["format"] = "jpg"
-            train_dataset = Cifar10_2(train_config)
-            test_dataset = Cifar10_2(test_config)
+            train_dataset = Cifar10(train_config)
+            test_dataset = Cifar10(test_config)
         elif self.config["dataset"] == "lfw":
             train_config["format"] = "jpg"
             test_config["format"] = "jpg"
