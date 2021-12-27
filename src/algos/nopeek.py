@@ -1,6 +1,7 @@
 from algos.simba_algo import SimbaDefence
 import torch
 from torch.nn.modules.loss import _Loss
+from torch.nn.utils import clip_grad_norm_
 import numpy as np
 
 
@@ -39,7 +40,9 @@ class NoPeek(SimbaDefence):
         self.initialize(config)
 
     def initialize(self, config):
+        clip_value = 1.0
         self.client_model = self.init_client_model(config)
+        clip_grad_norm_(self.client_model.parameters(), clip_value)
         self.put_on_gpus()
         self.utils.register_model("client_model", self.client_model)
         self.optim = self.init_optim(config, self.client_model)
