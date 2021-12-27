@@ -6,7 +6,7 @@ from utils.logs import Logs
 from shutil import copytree, copy2
 from glob import glob
 import shutil
-
+from torchvision.utils import save_image
 
 class Utils():
     def __init__(self, config) -> None:
@@ -43,7 +43,7 @@ class Utils():
             items["x"] = Variable(sample["img"]).to(self.device)
             items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
             items["prvt_lbls"] = Variable(sample["private_label"]).to(self.device)
-            items["filename"] = sample["filename"]
+        items["filename"] = sample["filename"]
         return items
 
     def copy_source_code(self, path):
@@ -90,13 +90,22 @@ class Utils():
         for ele in range(int(z.shape[0])):
             z_path = challenge_dir + filename[ele] + '.pt'
             torch.save(z[ele].detach().cpu(), z_path)
-
+    
+    def save_images(self,z,filename):
+        filepath = self.config["log_path"] + "rec_images/"
+        if not os.path.isdir(filepath):
+            os.mkdir(filepath)
+        filename = [name.split("/")[-1].split('.')[0] for name in filename]
+        for ele in range(int(z.shape[0])):
+            z_path = filepath + filename[ele] + "_rec.jpg"
+            save_image(z[ele],z_path)
+    
     def check_path_status(self, path):
         """experiment_path = None
         if auto:  # This is to not duplicate work already done and to continue running experiments
             print("silently skipping experiment",
                   self.config.get('experiment_name'))
-            return None"""
+            eeturn None"""
         print("Experiment {} already present".format(self.config.get("experiment_name")))
         inp = input("Press e to exit, r to replace it, c to continue training: ")
         if inp == "e":
