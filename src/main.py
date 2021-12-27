@@ -1,7 +1,7 @@
 import argparse
 from scheduler import Scheduler
 
-b_default = "./configs/complex_nn.json"
+b_default = "./configs/decoder_attack.json"
 s_default = "./configs/system_config.json"
 
 parser = argparse.ArgumentParser(description='Run SIMBA benchmark')

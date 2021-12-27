@@ -74,16 +74,17 @@ class Scheduler():
 
     def attack_train(self) -> None:
         self.algo.train()
-        for _, sample in enumerate(self.dataloader.train):
+        for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
             self.algo.backward(items)
 
     def attack_test(self):
         self.algo.eval()
-        for _, sample in enumerate(self.dataloader.train):
+        for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            self.utils.save_images(z,items["filename"])
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()
