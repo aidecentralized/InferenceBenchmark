@@ -4,9 +4,9 @@ from torchvision import models
 from abc import abstractmethod
 
 
-class SimbaDefence(nn.Module):
+class SimbaBase(nn.Module):
     def __init__(self, utils):
-        super(SimbaDefence, self).__init__()
+        super(SimbaBase, self).__init__()
         self.utils = utils
 
     @abstractmethod
@@ -23,11 +23,26 @@ class SimbaDefence(nn.Module):
 
     def train(self):
         self.mode = "train"
-        self.client_model.train()
+        for _, model in self.utils.model_registry.items():
+            model.train()
 
     def eval(self):
         self.mode = "val"
-        self.client_model.eval()
+        for _, model in self.utils.model_registry.items():
+            model.eval()
+
+    def init_optim(self, config, model):
+        if config["optimizer"] == "adam":
+            optim = torch.optim.Adam(model.parameters(), lr=config["lr"])
+        else:
+            print("Unknown optimizer {}".format(config["optimizer"]))
+
+        return optim
+
+
+class SimbaDefence(SimbaBase):
+    def __init__(self, utils):
+        super(SimbaDefence, self).__init__(utils)
 
     def init_client_model(self, config):
         if config["model_name"] == "resnet18":
@@ -39,51 +54,10 @@ class SimbaDefence(nn.Module):
 
         return model
 
-    def init_optim(self, config, model):
-        if config["optimizer"] == "adam":
-            optim = torch.optim.Adam(model.parameters(), lr=config["lr"])
-        else:
-            print("Unknown optimizer {}".format(config["optimizer"]))
-
-        return optim
-
     def put_on_gpus(self):
         self.client_model = self.utils.model_on_gpus(self.client_model)
 
 
-class SimbaAttack(nn.Module):
+class SimbaAttack(SimbaBase):
     def __init__(self, utils):
-        super(SimbaAttack, self).__init__()
-        self.utils = utils
-
-    @abstractmethod
-    def forward(self):
-        pass
-
-    @abstractmethod
-    def backward(self):
-        pass
-
-    def train(self):
-        self.mode = "train"
-        self.model.train()
-
-    def eval(self):
-        self.mode = "val"
-        self.model.eval()
-
-    def init_optim(self, config, model):
-        if config["optimizer"] == "adam":
-            optim = torch.optim.Adam(model.parameters(), lr=config["lr"])
-        else:
-            print("Unknown optimizer {}".format(config["optimizer"]))
-
-        return optim
-
-    def train(self):
-        self.mode = "train"
-        self.model.train()
-
-    def eval(self):
-        self.mode = "val"
-        self.model.eval()
+        super(SimbaAttack, self).__init__(utils)

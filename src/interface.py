@@ -1,4 +1,4 @@
-from torch.nn.modules.linear import Linear
+from algos.disco import Disco
 from algos.split_inference import SplitInference
 from algos.nopeek import NoPeek
 from algos.uniform_noise import UniformNoise
@@ -53,6 +53,8 @@ def load_algo(config, utils, dataloader=None):
         algo = GaussianBlur(config["client"], utils)
     elif method == "linear_correlation":
         algo = LinearCorrelation(config["client"], utils)
+    elif method == "disco":
+        algo = Disco(config["client"], utils)
     elif method == "supervised_decoder":
         item = next(iter(dataloader))
         z = item["z"]
