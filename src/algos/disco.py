@@ -177,7 +177,7 @@ class PruningNetwork(nn.Module):
         if self.pruning_style == "random":
             indices = self.get_random_channels(x, self.pruning_ratio)
             x = self.prune_channels(x, indices)
-        elif self.pruning_style == "network":
+        elif self.pruning_style == "learnable":
             indices = self.get_channels_from_network(x, self.pruning_ratio)
             x = self.prune_channels(x, indices)
         return x, indices
