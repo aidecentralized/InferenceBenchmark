@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 import pytorch_msssim
 
@@ -17,3 +18,6 @@ class MetricLoader():
 
     def ssim(self, img1, img2):
         return pytorch_msssim.SSIM()(img1, img2)
+    
+    def KLdivergence(self, preds, y):
+        return nn.KLDivLoss(reduction = 'batchmean')(torch.log(preds), y)

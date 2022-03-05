@@ -37,18 +37,8 @@ class BaseDataset(data.Dataset):
         pass
 
     def __getitem__(self, index):
-        filepath = self.indicies[index]
-
-        # Added all cases - Train, valid, challenge and when no arg is specified
-        if self.config["train"] is True:
-            filename = "train/"+str(filepath)+".jpg"
-        elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
-            filename = "challenge/"+str(filepath)+".jpg"
-        elif: self.config["val"] is True:
-            filename = "val/"+str(filepath)+".jpg"
-        else:
-            filename = filepath.split('/')[-1].split('.')[0]
-            
+        filepath = self.filepaths[index]
+        filename = filepath.split('/')[-1].split('.')[0]
         img = self.load_image(filepath)
         img = self.transforms(img)
         pred_label = self.load_label(filepath, "pred")
@@ -65,6 +55,68 @@ class BaseDataset(data.Dataset):
 
     def __len__(self):
         return len(self.filepaths)
+    
+
+class BaseDataset2(data.Dataset):
+    """docstring for BaseDataset"""
+
+    def __init__(self, config):
+        super(BaseDataset2, self).__init__()
+        self.format = config["format"]
+        self.set_indicies(config["path"])
+        self.transforms = config["transforms"]
+        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
+        self.config = config
+        if config["train"] is True:
+            self.data_to_run_on = self.train_dict
+        else:
+            self.data_to_run_on = self.val_dict
+
+    def set_indicies(self, path):
+        filepaths = path + "/*.{}".format(self.format)
+        num_of_images = self.data_to_run_on['set'].data.shape[0]
+        self.indicies = [i for i in range(num_of_images)]
+
+    def load_image(self, i):
+        img = Image.fromarray(self.data_to_run_on['set'].data[i])
+        return img
+
+    @staticmethod
+    def to_tensor(obj):
+        return torch.tensor(obj)
+
+    @abstractmethod
+    def load_label(self):
+        pass
+
+    def __getitem__(self, index):
+        filepath = self.indicies[index]
+
+        # Added all cases - Train, valid, challenge and when no arg is specified
+        if self.config["train"] is True:
+            filename = "train/"+str(filepath)+".jpg"
+        elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
+            filename = "challenge/"+str(filepath)+".jpg"
+        elif self.config["val"] is True:
+            filename = "val/"+str(filepath)+".jpg"
+        else:
+            filename = filepath.split('/')[-1].split('.')[0]
+            
+        img = self.load_image(filepath)
+        img = self.transforms(img)
+        pred_label = self.load_label(filepath, "pred")
+        pred_label = self.to_tensor(pred_label)
+        if self.protected_attribute == "data":
+            privacy_label = img
+        else:
+            privacy_label = self.load_label(filepath, "privacy")
+            privacy_label = self.to_tensor(privacy_label)
+        sample = {'img': img, 'prediction_label': pred_label,
+                  'private_label': privacy_label,
+                  'filepath': filepath, 'filename': filename}
+
+    def __len__(self):
+        return len(self.indicies)
 
 
 class FairFace(BaseDataset):
@@ -147,7 +199,7 @@ class LFW(BaseDataset):
         except:
             return 1, 1
 
-class Cifar10(BaseDataset):
+class Cifar10(BaseDataset2):
     """docstring for Cifar10"""
 
     def __init__(self, config):

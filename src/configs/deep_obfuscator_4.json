@@ -2,7 +2,7 @@
     "method": "deep_obfuscator",
     "client": {"model_name": "resnet18", "split_layer": 4,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,
-               "alpha": 0.9999,
+               "alpha": 0.999999,
                "proxy_adversary" : {"img_size": 128}},
     "server": {"model_name": "resnet18", "split_layer":4, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},
