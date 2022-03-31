@@ -1,5 +1,5 @@
 {
     "dataset_path": "/u/abhi24/Datasets/Faces/fairface/",
-    "experiments_folder": "/u/abhi24/Workspace/simba/expt_rohan/",
-    "gpu_devices": [0,1]
+    "experiments_folder": "/u/abhi24/Workspace/simba/experiments/",
+    "gpu_devices": [2,3]
 }
