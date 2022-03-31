@@ -38,6 +38,9 @@ class MetricLoader():
 
     def cross_entropy(self, preds, lbls):
         return self.ce(preds, lbls)
+    
+    def KLdivergence(self, preds, y):
+        return nn.KLDivLoss(reduction = 'batchmean')(torch.log(preds), y)
 
     def ssim(self, img1, img2):
         return self._ssim(img1, img2)

@@ -1,4 +1,3 @@
-from torch.nn.modules.linear import Linear
 from algos.split_inference import SplitInference
 from algos.nopeek import NoPeek
 from algos.uniform_noise import UniformNoise
@@ -10,6 +9,10 @@ from algos.gaussian_blur import GaussianBlur
 from algos.linear_correlation import LinearCorrelation
 
 from algos.supervised_decoder import SupervisedDecoder
+from algos.cloak import Cloak
+from algos.shredder import Shredder
+from algos.aioi import AIOI
+
 
 from data.loaders import DataLoader
 from models.model_zoo import Model
@@ -49,6 +52,12 @@ def load_algo(config, utils, dataloader=None):
         algo = DeepObfuscator(config["client"], utils)
     elif method == "pan":
         algo = PAN(config["client"], utils)
+    elif method == "cloak":
+        algo = Cloak(config["client"], utils)
+    elif method == "shredder":
+        algo = Shredder(config["client"], utils)
+    elif method == "aioi":
+        algo = AIOI(config["client"],utils)
     elif method == "gaussian_blur":
         algo = GaussianBlur(config["client"], utils)
     elif method == "linear_correlation":
