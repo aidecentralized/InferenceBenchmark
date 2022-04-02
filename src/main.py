@@ -14,7 +14,3 @@ args = parser.parse_args()
 
 scheduler = Scheduler(args)
 scheduler.run_job()
-<<<<<<< HEAD
-=======
-
->>>>>>> 4fe1a5313a2fb315687c46f251d869c3c3a44f66
