@@ -79,13 +79,13 @@ class Model(nn.Module):
                                         (preds, y), "acc")
 
     def optimize(self):
-        if self.config["model_name"] != "resnet20complex":
+        if self.config["model_name"] == "resnet20complex":
             self.optim.zero_grad()
-            self.loss.backward()
+            self.h.backward(self.decoder_grads)
             self.optim.step()
         else:
             self.optim.zero_grad()
-            self.h.backward(self.decoder_grads)
+            self.loss.backward()
             self.optim.step()
 
     def backward(self,y,decoder_grads=None):

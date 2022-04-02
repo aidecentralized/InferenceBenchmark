@@ -6,9 +6,10 @@ from algos.siamese_embedding import SiameseEmbedding
 from algos.pca_embedding import PCAEmbedding
 from algos.deepobfuscator import DeepObfuscator
 from algos.pan import PAN
+from algos.complex_nn import ComplexNN
 from algos.gaussian_blur import GaussianBlur
 from algos.linear_correlation import LinearCorrelation
-
+from algos.maxentropy import MaxEntropy
 from algos.supervised_decoder import SupervisedDecoder
 
 from data.loaders import DataLoader
@@ -55,6 +56,8 @@ def load_algo(config, utils, dataloader=None):
         algo = GaussianBlur(config["client"], utils)
     elif method == "linear_correlation":
         algo = LinearCorrelation(config["client"], utils)
+    elif method == "maxentropy":
+        algo = MaxEntropy(config["client"], utils)
     elif method == "supervised_decoder":
         item = next(iter(dataloader))
         z = item["z"]

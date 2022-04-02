@@ -91,14 +91,20 @@ class Utils():
             z_path = challenge_dir + filename[ele] + '.pt'
             torch.save(z[ele].detach().cpu(), z_path)
     
-    def save_images(self,z,filename):
+    def save_images(self,x_and_z,filename):
+        x,z = x_and_z
         filepath = self.config["log_path"] + "rec_images/"
         if not os.path.isdir(filepath):
             os.mkdir(filepath)
         filename = [name.split("/")[-1].split('.')[0] for name in filename]
         for ele in range(int(z.shape[0])):
-            z_path = filepath + filename[ele] + "_rec.jpg"
+            path = filepath + filename[ele] + "/"
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            z_path = path + filename[ele] + "_rec.jpg"
+            x_path = path + filename[ele] + "_orig.jpg"
             save_image(z[ele],z_path)
+            save_image(x[ele],x_path)
     
     def check_path_status(self, path):
         """experiment_path = None

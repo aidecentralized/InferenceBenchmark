@@ -57,6 +57,7 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.train):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            # self.utils.save_images((items["x"],z),items["filename"])
             data = self.model.forward(z)
             items["decoder_grads"] = self.algo.infer(data,items["pred_lbls"])
             items["server_grads"] = self.model.backward(items["pred_lbls"],items["decoder_grads"])
@@ -68,6 +69,7 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            # self.utils.save_images((items["x"],z),items["filename"])
             data = self.model.forward(z)
             self.algo.infer(data,items["pred_lbls"])
             self.model.compute_loss(data,items["pred_lbls"])
@@ -84,7 +86,7 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
-            self.utils.save_images(z,items["filename"])
+            self.utils.save_images((items["x"],z),items["filename"])
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()
