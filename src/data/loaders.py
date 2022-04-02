@@ -1,11 +1,8 @@
 import numpy as np
 import torch
 from torchvision import transforms
-<<<<<<< HEAD
 from data.dataset_utils import FairFace,Cifar10, CelebA, Cifar10_2, LFW#, UTKFace
-=======
 from data.dataset_utils import FairFace, CelebA, Cifar10, LFW#, UTKFace, Cifar10_2
->>>>>>> 4fe1a5313a2fb315687c46f251d869c3c3a44f66
 from data.dataset_utils import Challenge
 
 class DataLoader():

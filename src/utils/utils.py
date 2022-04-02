@@ -111,7 +111,7 @@ class Utils():
         if auto:  # This is to not duplicate work already done and to continue running experiments
             print("silently skipping experiment",
                   self.config.get('experiment_name'))
-            eeturn None"""
+            return None"""
         print("Experiment {} already present".format(self.config.get("experiment_name")))
         inp = input("Press e to exit, r to replace it, c to continue training: ")
         if inp == "e":

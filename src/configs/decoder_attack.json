@@ -5,7 +5,7 @@
                   "optimizer": "adam", "lr": 0.01, "attribute": "data"},
     "total_epochs": 150,
     "training_batch_size": 128,
-    "challenge_experiment": "uniform_noise_fairface_data_resnet18_split6_1_distribution_gaussian_mean_0_sigma_0",
+    "challenge_experiment": "pan_fairface_data_resnet18_split6_1_alpha_0.9",
     "protected_attribute": "data",
     "dataset": "fairface",
     "exp_id": "1",

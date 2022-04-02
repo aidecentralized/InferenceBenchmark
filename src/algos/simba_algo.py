@@ -104,9 +104,3 @@ class SimbaAttack(nn.Module):
     def eval(self):
         self.mode = "val"
         self.model.eval()
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 4fe1a5313a2fb315687c46f251d869c3c3a44f66
