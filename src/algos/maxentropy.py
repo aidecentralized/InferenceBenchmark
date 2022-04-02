@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from algos.simba_algo import SimbaDefence
 import torch
 from torchvision import models
