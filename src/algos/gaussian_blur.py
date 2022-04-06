@@ -21,7 +21,7 @@ class GaussianSmoothing(nn.Module):
     def __init__(self, channels, kernel_size, sigma, device, dim=2):
         super(GaussianSmoothing, self).__init__()
         if isinstance(kernel_size, numbers.Number):
-            kernel_size = [kernel_size] * dim
+            kernel_size = [kernel_size*math.sqrt(sigma)] * dim
         if isinstance(sigma, numbers.Number):
             sigma = [sigma] * dim
 
