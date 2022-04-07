@@ -114,7 +114,8 @@ class BaseDataset2(data.Dataset):
         sample = {'img': img, 'prediction_label': pred_label,
                   'private_label': privacy_label,
                   'filepath': filepath, 'filename': filename}
-
+        return sample
+    
     def __len__(self):
         return len(self.indicies)
 
