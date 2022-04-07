@@ -31,6 +31,8 @@ class DataLoader():
             config = {
                 "transforms": trainTransform,
                 "train": False,
+                "val": False,
+                "challenge": True,
                 "path": self.config["dataset_path"],
                 "prediction_attribute": "data",
                 "protected_attribute": self.config["protected_attribute"],
@@ -42,11 +44,15 @@ class DataLoader():
         else:
             train_config = {"transforms": trainTransform,
                             "train": True,
+                            "val": False,
+                            "challenge": False,
                             "path": self.config["dataset_path"],
                             "prediction_attribute": self.config["prediction_attribute"],
                             "protected_attribute": self.config["protected_attribute"]}
             test_config = {"transforms": trainTransform,
                         "train": False,
+                        "val": True,
+                        "challenge": False,
                         "path": self.config["dataset_path"],
                         "prediction_attribute": self.config["prediction_attribute"],
                         "protected_attribute": self.config["protected_attribute"]}
