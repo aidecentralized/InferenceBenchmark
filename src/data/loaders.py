@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torchvision import transforms
+from data.dataset_utils import FairFace,Cifar10, CelebA, Cifar10_2, LFW#, UTKFace
 from data.dataset_utils import FairFace, CelebA, Cifar10, LFW#, UTKFace, Cifar10_2
 from data.dataset_utils import Challenge
 

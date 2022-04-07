@@ -5,9 +5,10 @@ from algos.siamese_embedding import SiameseEmbedding
 from algos.pca_embedding import PCAEmbedding
 from algos.deepobfuscator import DeepObfuscator
 from algos.pan import PAN
+from algos.complex_nn import ComplexNN
 from algos.gaussian_blur import GaussianBlur
 from algos.linear_correlation import LinearCorrelation
-
+from algos.maxentropy import MaxEntropy
 from algos.supervised_decoder import SupervisedDecoder
 from algos.cloak import Cloak
 from algos.shredder import Shredder
@@ -46,6 +47,8 @@ def load_algo(config, utils, dataloader=None):
         algo = UniformNoise(config["client"], utils)
     elif method == "siamese_embedding":
         algo = SiameseEmbedding(config["client"], utils)
+    elif method == "complex_nn":
+        algo = ComplexNN(config["client"], utils)
     elif method == "pca_embedding":
         algo = PCAEmbedding(config["client"], utils)
     elif method == "deep_obfuscator":
@@ -62,6 +65,8 @@ def load_algo(config, utils, dataloader=None):
         algo = GaussianBlur(config["client"], utils)
     elif method == "linear_correlation":
         algo = LinearCorrelation(config["client"], utils)
+    elif method == "maxentropy":
+        algo = MaxEntropy(config["client"], utils)
     elif method == "supervised_decoder":
         item = next(iter(dataloader))
         z = item["z"]

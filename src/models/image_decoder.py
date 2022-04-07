@@ -64,7 +64,6 @@ class Decoder(nn.Module):
         input_nc = config["channels"]
         img_size = config["img_size"]
         patch_size = config["patch_size"]
-
         # Because usually images get downsampled by a factor of 2
         feat_map_size = img_size
         feat_map_list = []
@@ -77,7 +76,6 @@ class Decoder(nn.Module):
             patch_channels.append(patch_channels[-1] * 2)
         # remove the last element to ensure the closest match is smallest
         patch_channels.pop()
-
         # Find closest feature map
         index = closest(feat_map_list, patch_size)
         index_channel = closest(patch_channels, input_nc)
