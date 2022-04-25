@@ -7,11 +7,11 @@
     "optimizer": "adam",
     "lr": 0.01,
     "attribute": "race",
-    "model": "nopeek",
-    "model_config": "./configs/nopeek.json",
-    "iters": 1000
+    "iters": 10000,
+    "target_model": "nopeek"
   },
   "total_epochs": 1,
+  "no_train": true,
   "training_batch_size": 64,
   "challenge_experiment": "nopeek_fairface_data_resnet18_split6_1_alpha_0.9",
   "protected_attribute": "race",

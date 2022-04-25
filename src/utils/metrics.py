@@ -15,15 +15,13 @@ class PSNR:
         mse = torch.mean((img1 - img2) ** 2)
         return 20 * torch.log10(255.0 / torch.sqrt(mse))
 
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
 
 class MetricLoader():
     # Add more metrics
-    def __init__(self, device=None):
+    def __init__(self, device=None, data_range=1):
         self.l1_dist = nn.L1Loss()
         self.ce = nn.CrossEntropyLoss()
-        self._ssim = pytorch_msssim.SSIM()
+        self._ssim = pytorch_msssim.SSIM(data_range=data_range)
         self.l2_dist = nn.MSELoss()
         self._psnr = PSNR()
         _lpips = lpips.LPIPS(net='vgg')

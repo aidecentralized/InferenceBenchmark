@@ -4,9 +4,7 @@ from algos.uniform_noise import UniformNoise
 from algos.nopeek import NoPeek
 from algos.simba_algo import SimbaAttack
 from utils.metrics import MetricLoader
-from utils.utils import Utils
 import torch
-from torch.autograd import Variable
 from torchvision.utils import save_image
 
 class InputOptimization(SimbaAttack):
@@ -16,17 +14,13 @@ class InputOptimization(SimbaAttack):
 
   def initialize(self, config):
     self.attribute = config["attribute"]
-    self.model_name = config["model"]
+    self.model_name = config["target_model"]
 
     # load obfuscator model
-    target_config_file = open(config["model_config"])
-    target_exp_config = json.load(target_config_file) #config_loader(config["model_config"])
-    system_config_file = open("./configs/system_config.json")
-    system_config = json.load(system_config_file) #config_loader(config["model_config"])
+    target_exp_config = json.load(open(config["target_model_config"])) #config_loader(config["model_config"])
+    system_config = json.load(open("./configs/system_config.json")) #config_loader(config["model_config"])
     target_config = process_config(system_config, target_exp_config)
     self.target_config = target_config
-    print(target_config)
-    # target_utils = load_utils()
 
     if self.model_name == "uniform_noise":
       self.model = UniformNoise(target_config["client"], self.utils)
@@ -37,44 +31,12 @@ class InputOptimization(SimbaAttack):
     
     wts_path = self.target_config["model_path"] + "/client_model.pt"
     wts = torch.load(wts_path)
-    if isinstance(self.model.client_model, torch.nn.DataParallel):
+    if isinstance(self.model.client_model, torch.nn.DataParallel):  # type: ignore
         self.model.client_model.module.load_state_dict(wts)
     else:
         self.model.client_model.load_state_dict(wts)
 
-    # print(self.model)
-    # print(self.utils.model_registry)
-    # print(target_config["model_path"])
-
-
-
-
-    # wts_path = target_config["model_path"] + "/client_model.pt"
-    # # self.utils.load_saved_model(, self.model.client_model)
-
-    # wts = torch.load(wts_path)
-    # if isinstance(self.model.client_model, torch.nn.DataParallel):
-    #     self.model.client_model.module.load_state_dict(wts)
-    # else:
-    #     self.model.client_model.load_state_dict(wts)
-
-
-
-
-
-    # self.utils.load_saved_models()
-    # self.model = self.utils.model_registry["client_model"]
-
-    # print(self.model)
-    # if self.model_name not in self.utils.model_registry:
-    #   self.utils.load_saved_models()
-
-    # assert self.model_name in self.utils.model_registry, f"MODEL {self.model_name} not found!"
-
-    # self.model = self.utils.model_registry[self.model_name]
-
-
-    self.metric = MetricLoader()
+    self.metric = MetricLoader(data_range=1)
 
     self.loss_tag = "recons_loss"
 
@@ -95,9 +57,9 @@ class InputOptimization(SimbaAttack):
     self.lr = config["lr"]
 
     if config["optimizer"] == "adam":
-      self.optim = torch.optim.Adam
+      self.optim = torch.optim.Adam  # type: ignore
     else:
-      self.optim = torch.optim.SGD
+      self.optim = torch.optim.SGD  # type: ignore
 
     if config["loss_fn"] == "ssim":
         self.loss_fn = self.metric.ssim
@@ -111,96 +73,44 @@ class InputOptimization(SimbaAttack):
     elif config["loss_fn"] == "lpips":
         self.loss_fn = self.metric.lpips
         self.sign = 1 # to minimize lpips
-
     pass 
 
-  def getBack(self, var_grad_fn):
-    print(var_grad_fn)
-    for n in var_grad_fn.next_functions:
-        if n[0]:
-            try:
-                tensor = getattr(n[0], 'variable')
-                print(n[0])
-                print('Tensor with grad found:') #, tensor)
-                print(' - gradient:', tensor.grad)
-                print()
-            except AttributeError as e:
-                self.getBack(n[0])
-    
   def forward(self, items):
-
-    """
-    PROBLEMS:
-    - ssim for img and untrained ys is already 0.9888
-    - loss(z, out) decreases, but does not improve loss between img and ys
-    
-    """
     if self.mode == "val":
-      # print("TESTING")
       z = items["z"]
       img = items["img"]
-      # grab batch size + image size to get these dims
-      ys = torch.rand((z.shape[0], 3, 128, 128)).to(self.utils.device)
-      
-      # ys = torch.rand((128, 128, 16, 16)).to(self.utils.device)
-      print(z.shape, img.shape, ys.shape)
+
+      ys = torch.rand((z.shape[0], 3, 128, 128)).to(self.utils.device)  # type: ignore
       ys.requires_grad_(True)
       optim = self.optim([ys], lr=self.lr)
       
-      # model_temp = torch.nn.Linear(16,16).to(self.utils.device)
       prefix = "train/"
       self.utils.logger.set_log_freq(self.iters)
-      # log the lowest loss
-      # last = torch.clone(ys)
-
-      ssim = self.metric.ssim(img, ys)
-      l2 = self.metric.l2(img, ys)
       
-      print("SSIM LOSS: ", ssim.item())
-      print("L2 LOSS: ", l2.item())
-
-      save_image(ys[0], 'ys_0.png')
-      save_image(img[0], 'img_0.png')
-
+      # log the lowest loss
+      lowest_loss = float("inf")
+      lowest_ys = torch.clone(ys)
 
       for _ in range(self.iters):
         optim.zero_grad()
         out = self.model({"x": ys})
-        # out = model_temp(ys)
         loss = self.loss_fn(out, z)
-        # print(loss)
-        # self.getBack(loss.grad_fn)
-        # print(out.shape, z.shape)
-        # print("DIFF: ", self.loss_fn(ys, last))
-        # last = torch.clone(ys)
 
-        # ssim = self.metric.ssim(img, ys)
-        # self.utils.logger.add_entry(prefix + self.ssim_tag,
-        #                             ssim.item())
+        ssim = self.metric.ssim(img, ys)
+        self.utils.logger.add_entry(prefix + self.ssim_tag,
+                                      ssim.item())
 
-        # l1 = self.metric.l1(img, ys)
-        # self.utils.logger.add_entry(prefix + self.l1_tag,
-        #                             l1.item())
+        if ssim < lowest_loss: 
+          lowest_loss = ssim
+          lowest_ys = torch.clone(ys)
 
-        l2 = self.metric.l2(img, ys)
-        self.utils.logger.add_entry(prefix + self.l2_tag,
-                                    l2.item())
-
-        # psnr = self.metric.psnr(img, ys)
-        # self.utils.logger.add_entry(prefix + self.psnr_tag,
-        #                             psnr.item())
         (self.sign * loss).backward()
-
         optim.step()
-      ssim = self.metric.ssim(img, ys)
+
+      ssim = self.metric.ssim(img, lowest_ys)
       self.utils.logger.add_entry(prefix + self.ssim_tag,
                                     ssim.item())
-
       self.utils.logger.flush_epoch()
-      save_image(ys[0], 'ys_0_after.png')
-
-
-      
 
   def backward(self, _):
     pass

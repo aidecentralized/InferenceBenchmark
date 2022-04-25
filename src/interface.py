@@ -66,13 +66,13 @@ def load_algo(config, utils, dataloader=None):
         algo = LinearCorrelation(config["client"], utils)
     elif method == "supervised_decoder":
         item = next(iter(dataloader))
-        print("item: ", item)
         z = item["z"]
         config["adversary"]["channels"] = z.shape[1]
         config["adversary"]["patch_size"] = z.shape[2]
         algo = SupervisedDecoder(config["adversary"], utils)
     elif method == "input_optimization":
-        config["adversary"]["model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
+        config["adversary"]["target_model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
+        config["adversary"]["target_model_config"] = path.join(config["experiments_folder"], config["challenge_experiment"], "configs", f"{config['adversary']['target_model']}.json")
         algo = InputOptimization(config["adversary"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
