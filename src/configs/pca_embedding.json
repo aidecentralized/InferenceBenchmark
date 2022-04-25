@@ -6,7 +6,7 @@
     "server": {"model_name": "feed_forward", "num_layers":2, "logits": [10, 10, 2],
                "lr": 3e-4, "optimizer": "adam"},
     "learning_rate": 0.01,
-    "total_epochs": 150,
+    "total_epochs": 15,
     "training_batch_size": 128,
     "dataset": "fairface",
     "protected_attribute": "data",

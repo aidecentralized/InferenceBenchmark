@@ -15,6 +15,8 @@ class PSNR:
         mse = torch.mean((img1 - img2) ** 2)
         return 20 * torch.log10(255.0 / torch.sqrt(mse))
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 class MetricLoader():
     # Add more metrics

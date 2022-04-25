@@ -57,8 +57,8 @@ class NoPeek(SimbaDefence):
         x = items["x"]
         self.z = self.client_model(x)
         self.x = x
-        z = self.z.detach()
-        z.requires_grad = True
+        z = self.z #.detach()
+        # z.requires_grad = True
         self.dcor_loss = self.loss(self.x, self.z)
         self.utils.logger.add_entry(self.mode + "/" + self.dcor_tag,
                                     self.dcor_loss.item())

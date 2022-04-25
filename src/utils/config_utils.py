@@ -21,6 +21,9 @@ def config_loader(filepath):
     the calculations of dynamic variables.
     """
     b_json, s_json = load_config_as_dict(filepath)
+    return process_config(b_json, s_json)
+
+def process_config(s_json, b_json):
     experiment_dict = s_json
     research_dict = b_json
     research_dict.update(experiment_dict)

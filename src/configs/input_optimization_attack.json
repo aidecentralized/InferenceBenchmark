@@ -1,16 +1,19 @@
 {
   "experiment_type": "attack",
-  "method": "supervised_decoder",
+  "method": "input_optimization",
   "adversary": {
-    "loss_fn": "ssim",
+    "loss_fn": "l2",
     "img_size": 128,
     "optimizer": "adam",
     "lr": 0.01,
-    "attribute": "race"
+    "attribute": "race",
+    "model": "nopeek",
+    "model_config": "./configs/nopeek.json",
+    "iters": 1000
   },
-  "total_epochs": 150,
-  "training_batch_size": 128,
-  "challenge_experiment": "pan_fairface_data_resnet18_split6_1_alpha_0.9",
+  "total_epochs": 1,
+  "training_batch_size": 64,
+  "challenge_experiment": "nopeek_fairface_data_resnet18_split6_1_alpha_0.9",
   "protected_attribute": "race",
   "dataset": "fairface",
   "exp_id": "1",

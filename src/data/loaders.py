@@ -32,7 +32,7 @@ class DataLoader():
                 "transforms": trainTransform,
                 "train": False,
                 "path": self.config["dataset_path"],
-                "prediction_attribute": "data",
+                "prediction_attribute": "race",
                 "protected_attribute": self.config["protected_attribute"],
                 "challenge_dir": self.config["challenge_dir"],
                 "dataset": self.config["dataset"]
@@ -72,15 +72,14 @@ class DataLoader():
         elif self.config["dataset"] == "UTKFace":
             train_config["format"] = "jpg"
             dataset = UTKFace(train_config)
-
+        print(train_dataset[0]["img"].shape)
         if self.config["split"] is True and not isattack:
             train_dataset, test_dataset = self.get_split(dataset)
-
 
         if isattack:
             dataset = Challenge(train_config)
             train_dataset, test_dataset = self.get_split(dataset)
-
+        print("BATCH SIZE: ", self.config["train_batch_size"])
         self.trainloader = torch.utils.data.DataLoader(
             train_dataset, batch_size=self.config["train_batch_size"],
             shuffle=True, num_workers=5, drop_last=True)

@@ -1,5 +1,5 @@
 from interface import (load_config, load_algo, load_data, load_model, load_utils)
-
+import torch
 
 class Scheduler():
     def __init__(self, config_path) -> None:
@@ -36,12 +36,15 @@ class Scheduler():
 
     def run_defense_job(self):
         for epoch in range(self.config["total_epochs"]):
+            print("starting epoch ", epoch)
             self.defense_train()
             self.defense_test()
             self.epoch_summary()
+            print("finished epoch ", epoch)
         self.generate_challenge()
 
     def run_attack_job(self):
+        print("running attack job")
         for epoch in range(self.config["total_epochs"]):
             self.attack_train()
             self.attack_test()
@@ -59,6 +62,8 @@ class Scheduler():
             z = self.algo.forward(items)
             items["server_grads"] = self.model.processing(z, items["pred_lbls"])
             self.algo.backward(items)
+            # if _ == 10:
+            #     return
 
     def defense_test(self) -> None:
         self.algo.eval()
@@ -68,10 +73,16 @@ class Scheduler():
             z = self.algo.forward(items)
             self.model.processing(z, items["pred_lbls"])
 
+            # if _ == 10:
+            #     return
+
     def attack_train(self) -> None:
         self.algo.train()
+        return
         for _, sample in enumerate(self.dataloader.train):
+            # print(_, sample)
             items = self.utils.get_data(sample)
+            # print(items)
             z = self.algo.forward(items)
             self.algo.backward(items)
 
@@ -80,6 +91,7 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.train):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            return
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()
@@ -88,7 +100,10 @@ class Scheduler():
     def generate_challenge(self) -> None:
         challenge_dir = self.utils.make_challenge_dir(self.config["results_path"])
         self.algo.eval()
+        loss = torch.nn.MSELoss()
         for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            print("BRUH LOSSS: ", loss(z, z))
+            print("BRUH LOSSS: ", loss(z, self.algo.forward(items)))
             self.utils.save_data(z, items["filename"], challenge_dir)

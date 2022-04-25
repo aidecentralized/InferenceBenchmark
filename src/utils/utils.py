@@ -34,11 +34,13 @@ class Utils():
             # Only CPU available
             return model
 
-    def get_data(self, sample):
+    def get_data(self, sample, experiment_type=""):
         items = {}
-        if self.config["experiment_type"] == "attack":
+        exp_type = experiment_type if experiment_type else self.config["experiment_type"]
+        if exp_type  == "attack":
             items["z"] = Variable(sample["z"]).to(self.device)
             items["x"] = Variable(sample["x"]).to(self.device)
+            items["img"] = Variable(sample["img"]).to(self.device)
         else:
             items["x"] = Variable(sample["img"]).to(self.device)
             items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
@@ -142,3 +144,10 @@ class Utils():
             else:
                 model.load_state_dict(wts)
         self.logger.log_console("models loaded")
+
+    def load_saved_model(self, fpath, model):
+        wts = torch.load(fpath)
+        if isinstance(model, nn.DataParallel):
+            model.module.load_state_dict(wts)
+        else:
+            model.load_state_dict(wts)
