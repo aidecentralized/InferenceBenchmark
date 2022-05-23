@@ -1,0 +1,25 @@
+{
+  "experiment_type": "attack",
+  "method": "input_model_optimization",
+  "adversary": {
+    "loss_fn": "l2",
+    "img_size": 128,
+    "optimizer": "adam",
+    "lr": 0.01,
+    "attribute": "race",
+    "iters": 2000,
+    "target_model": "nopeek"
+  },
+  "total_epochs": 1,
+  "no_train": true,
+  "training_batch_size": 64,
+  "challenge_experiment": "nopeek_fairface_data_resnet18_split6_1_alpha_0.9",
+  "protected_attribute": "race",
+  "dataset": "fairface",
+  "exp_id": "1",
+  "img_size": 128,
+  "split": true,
+  "train_split": 0.9,
+  "test_batch_size": 64,
+  "exp_keys": ["train_split", "adversary.loss_fn"]
+}
