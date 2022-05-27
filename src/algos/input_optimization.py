@@ -22,12 +22,8 @@ class InputOptimization(SimbaAttack):
     target_config = process_config(system_config, target_exp_config)
     self.target_config = target_config
 
-    if self.model_name == "uniform_noise":
-      self.model = UniformNoise(target_config["client"], self.utils)
-    elif self.model_name == "nopeek": 
-      self.model = NoPeek(target_config["client"], self.utils)
-    else:
-      raise NotImplementedError
+    from interface import load_algo
+    self.model = load_algo(target_config, self.utils)
     
     wts_path = self.target_config["model_path"] + "/client_model.pt"
     wts = torch.load(wts_path)
@@ -89,7 +85,7 @@ class InputOptimization(SimbaAttack):
       
       # log the lowest loss
       lowest_loss = float("inf")
-      lowest_ys = torch.clone(ys)
+      lowest_ys = torch.clone(ys)  # type: ignore
 
       for _ in range(self.iters):
         optim.zero_grad()
@@ -102,7 +98,7 @@ class InputOptimization(SimbaAttack):
 
         if ssim < lowest_loss: 
           lowest_loss = ssim
-          lowest_ys = torch.clone(ys)
+          lowest_ys = torch.clone(ys)  # type: ignore
 
         (self.sign * loss).backward()
         optim.step()
