@@ -1,10 +1,10 @@
 {
-    "method": "deep_obfuscator",
-    "client": {"model_name": "resnet18", "split_layer": 6,
+    "method": "cloak",
+    "client": {"model_name": "resnet18", "split_layer": 0,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,
-               "alpha": 0.5,
+               "max_scale": 5, "min_scale": 0, "coeff":0.01, "increase": true, 
                "proxy_adversary" : {"img_size": 128}},
-    "server": {"model_name": "resnet18", "split_layer":6, "logits": 2, "pretrained": false,
+    "server": {"model_name": "resnet18", "split_layer":0, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},
     "learning_rate": 0.01,
     "total_epochs": 150,
@@ -15,6 +15,6 @@
     "img_size": 128,
     "split": false,
     "test_batch_size": 64,
-    "exp_id": "1",
-    "exp_keys": ["client.alpha"]
+    "exp_id": "2",
+    "exp_keys": ["client.min_scale", "client.max_scale", "client.coeff"]
 }

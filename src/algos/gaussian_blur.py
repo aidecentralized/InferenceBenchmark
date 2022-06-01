@@ -21,7 +21,7 @@ class GaussianSmoothing(nn.Module):
     def __init__(self, channels, kernel_size, sigma, device, dim=2):
         super(GaussianSmoothing, self).__init__()
         if isinstance(kernel_size, numbers.Number):
-            kernel_size = [kernel_size] * dim
+            kernel_size = [kernel_size*math.sqrt(sigma)] * dim
         if isinstance(sigma, numbers.Number):
             sigma = [sigma] * dim
 
@@ -36,8 +36,7 @@ class GaussianSmoothing(nn.Module):
         )
         for size, std, mgrid in zip(kernel_size, sigma, meshgrids):
             mean = (size - 1) / 2
-            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * \
-                      torch.exp(-((mgrid - mean) / std) ** 2 / 2)
+            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-((mgrid - mean) / std) ** 2 / 2)
 
         # Make sure sum of values in gaussian kernel equals 1.
         kernel = kernel / torch.sum(kernel)

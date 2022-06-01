@@ -53,11 +53,11 @@ class NoPeek(SimbaDefence):
         self.utils.logger.register_tag("train/" + self.dcor_tag)
         self.utils.logger.register_tag("val/" + self.dcor_tag)
 
-    def forward(self, items):
+    def forward(self, items, detach=True):
         x = items["x"]
         self.z = self.client_model(x)
         self.x = x
-        z = self.z.detach()
+        z = self.z.detach() if detach else self.z
         z.requires_grad = True
         self.dcor_loss = self.loss(self.x, self.z)
         self.utils.logger.add_entry(self.mode + "/" + self.dcor_tag,
