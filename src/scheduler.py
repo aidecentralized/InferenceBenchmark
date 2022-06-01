@@ -57,7 +57,9 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.train):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
-            items["server_grads"] = self.model.processing(z, items["pred_lbls"])
+            data = self.model.forward(z)
+            items["decoder_grads"] = self.algo.infer(data,items["pred_lbls"])
+            items["server_grads"] = self.model.backward(items["pred_lbls"],items["decoder_grads"])
             self.algo.backward(items)
 
     def defense_test(self) -> None:
@@ -66,22 +68,25 @@ class Scheduler():
         for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
-            self.model.processing(z, items["pred_lbls"])
+            data = self.model.forward(z)
+            self.algo.infer(data,items["pred_lbls"])
+            self.model.compute_loss(data,items["pred_lbls"])
 
     def attack_train(self) -> None:
         if "no_train" in self.config and self.config["no_train"]:
             return
         self.algo.train()
-        for _, sample in enumerate(self.dataloader.train):
+        for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
             self.algo.backward(items)
 
     def attack_test(self):
         self.algo.eval()
-        for _, sample in enumerate(self.dataloader.train):
+        for _, sample in enumerate(self.dataloader.test):
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
+            self.utils.save_images(z,items["filename"])
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()

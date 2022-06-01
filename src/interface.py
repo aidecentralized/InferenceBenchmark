@@ -48,6 +48,8 @@ def load_algo(config, utils, dataloader=None):
         algo = UniformNoise(config["client"], utils)
     elif method == "siamese_embedding":
         algo = SiameseEmbedding(config["client"], utils)
+    elif method == "complex_nn":
+        algo = ComplexNN(config["client"], utils)
     elif method == "pca_embedding":
         algo = PCAEmbedding(config["client"], utils)
     elif method == "deep_obfuscator":

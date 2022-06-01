@@ -53,6 +53,8 @@ class SupervisedDecoder(SimbaAttack):
         self.loss = self.loss_fn(self.x, x)
         self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
                                     self.loss.item())
+    
+    def backward(self, items):
         if self.mode == "val" and self.attribute == "data":
             prefix = "val/"
 

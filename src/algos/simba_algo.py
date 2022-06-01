@@ -64,6 +64,9 @@ class SimbaDefence(nn.Module):
     def put_on_gpus(self):
         self.client_model = self.utils.model_on_gpus(self.client_model)
 
+    def infer(self,data,labels):
+        pass
+
 
 class SimbaAttack(nn.Module):
     def __init__(self, utils):
@@ -101,6 +104,4 @@ class SimbaAttack(nn.Module):
     def eval(self):
         self.mode = "val"
         self.model.eval()
-
-
 
