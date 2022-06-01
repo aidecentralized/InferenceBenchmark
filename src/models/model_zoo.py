@@ -3,6 +3,9 @@ import torchvision.models as models
 import torch.nn as nn
 import torch.nn.functional as F
 from models.complex_models import ResNetProcessorComplex
+from models.Unet import StochasticUNet
+from models.Xception import Xception
+
 
 class Model(nn.Module):
     def __init__(self, config, utils):
@@ -37,18 +40,43 @@ class Model(nn.Module):
             layer_list.append(nn.Linear(logits[l], logits[l+1]))
             self.model = nn.Sequential(*nn.ModuleList(layer_list))
         else:
-            pretrained = config["pretrained"]
+            
+            pretrained = config["pretrained"] # this was repeated similarly in the main code - is that needed (Rohan)
             self.split_layer = config["split_layer"]
             if config["model_name"] == "resnet18":
-                pretrained = config["pretrained"]
                 model = models.resnet18(pretrained=pretrained)
+                
+            elif config["model_name"] == "resnet34":
+                model = models.resnet34(pretrained=pretrained)
+                
+            elif config["model_name"] == "resnet50":
+                model = models.resnet50(pretrained=pretrained)
+
+            elif config['model_name'] == "vgg16":
+                model = models.vgg16(pretrained=pretrained)
+            elif config['model_name'] == "xception":
+                model = Xception(logits)
+                self.model = model
+            else:
+                pass  
+
+            if config["model_name"].startswith("resnet"):
+                if config["model_name"] == "resnet20complex":
+                    self.model = ResNetProcessorComplex(3,'alpha')
                 num_ftrs = model.fc.in_features
                 model.fc = nn.Sequential(nn.Flatten(),
                                         nn.Linear(num_ftrs, logits))
                 model = nn.ModuleList(list(model.children())[self.split_layer:])
                 self.model = nn.Sequential(*model)
-            elif config["model_name"] == "resnet20complex":
-                self.model = ResNetProcessorComplex(3,'alpha')
+
+
+            if config["model_name"].startswith("vgg"):
+                num_ftrs = model.classifier[0].in_features
+                model.classifier = nn.Sequential(nn.Flatten(),
+                                        nn.Linear(num_ftrs, logits))
+                model = nn.ModuleList(list(model.children())[self.split_layer:])
+                self.model = nn.Sequential(*model)
+
         self.model = self.utils.model_on_gpus(self.model)
         self.utils.register_model("server_model", self.model)
 
@@ -97,4 +125,9 @@ class Model(nn.Module):
             self.optimize()
         return self.z.grad
 
-
+    def processing(self, z, y):
+        z.retain_grad()
+        preds = self.forward(z)
+        self.compute_loss(preds, y)
+        self.optimize()
+        return z.grad

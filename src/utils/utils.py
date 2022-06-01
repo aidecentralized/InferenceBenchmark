@@ -39,6 +39,7 @@ class Utils():
         if self.config["experiment_type"] == "attack":
             items["z"] = Variable(sample["z"]).to(self.device)
             items["x"] = Variable(sample["x"]).to(self.device)
+            items["img"] = Variable(sample["img"]).to(self.device)
         else:
             items["x"] = Variable(sample["img"]).to(self.device)
             items["pred_lbls"] = Variable(sample["prediction_label"]).to(self.device)
@@ -150,4 +151,4 @@ class Utils():
                 model.module.load_state_dict(wts)
             else:
                 model.load_state_dict(wts)
-        self.logger.log_console("models loaded")
+        self.logger.log_console("models loaded")    

@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from abc import abstractmethod
+from models.Unet import StochasticUNet
+from models.Xception import Xception
 
 
 class SimbaDefence(nn.Module):
@@ -30,12 +32,24 @@ class SimbaDefence(nn.Module):
         self.client_model.eval()
 
     def init_client_model(self, config):
+        pretrained = config["pretrained"]
         if config["model_name"] == "resnet18":
-            model = models.resnet18(pretrained=config["pretrained"])
-            model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+                model = models.resnet18(pretrained=pretrained)                
+        elif config["model_name"] == "resnet34":
+                model = models.resnet34(pretrained=pretrained)                
+        elif config["model_name"] == "resnet50":
+                model = models.resnet50(pretrained=pretrained)
+        elif config['model_name'] == "vgg16":
+                model = models.vgg16(pretrained=pretrained)
+        elif config['model_name'] == "stochasticunet":
+                model = StochasticUNet()
+                return model
         else:
             print("can't find client model")
-            exit()
+            exit()  
+
+        model = nn.Sequential(*nn.ModuleList(list(model.children())[:config["split_layer"]]))
+            
 
         return model
 
@@ -90,3 +104,4 @@ class SimbaAttack(nn.Module):
     def eval(self):
         self.mode = "val"
         self.model.eval()
+

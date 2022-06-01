@@ -55,6 +55,68 @@ class BaseDataset(data.Dataset):
 
     def __len__(self):
         return len(self.filepaths)
+    
+
+class BaseDataset2(data.Dataset):
+    """docstring for BaseDataset"""
+
+    def __init__(self, config):
+        super(BaseDataset2, self).__init__()
+        self.format = config["format"]
+        self.set_indicies(config["path"])
+        self.transforms = config["transforms"]
+        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
+        self.config = config
+        if config["train"] is True:
+            self.data_to_run_on = self.train_dict
+        else:
+            self.data_to_run_on = self.val_dict
+
+    def set_indicies(self, path):
+        filepaths = path + "/*.{}".format(self.format)
+        num_of_images = self.data_to_run_on['set'].data.shape[0]
+        self.indicies = [i for i in range(num_of_images)]
+
+    def load_image(self, i):
+        img = Image.fromarray(self.data_to_run_on['set'].data[i])
+        return img
+
+    @staticmethod
+    def to_tensor(obj):
+        return torch.tensor(obj)
+
+    @abstractmethod
+    def load_label(self):
+        pass
+
+    def __getitem__(self, index):
+        filepath = self.indicies[index]
+
+        # Added all cases - Train, valid, challenge and when no arg is specified
+        if self.config["train"] is True:
+            filename = "train/"+str(filepath)+".jpg"
+        elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
+            filename = "challenge/"+str(filepath)+".jpg"
+        elif self.config["val"] is True:
+            filename = "val/"+str(filepath)+".jpg"
+        else:
+            filename = filepath.split('/')[-1].split('.')[0]
+            
+        img = self.load_image(filepath)
+        img = self.transforms(img)
+        pred_label = self.load_label(filepath, "pred")
+        pred_label = self.to_tensor(pred_label)
+        if self.protected_attribute == "data":
+            privacy_label = img
+        else:
+            privacy_label = self.load_label(filepath, "privacy")
+            privacy_label = self.to_tensor(privacy_label)
+        sample = {'img': img, 'prediction_label': pred_label,
+                  'private_label': privacy_label,
+                  'filepath': filepath, 'filename': filename}
+
+    def __len__(self):
+        return len(self.indicies)
 
 
 class FairFace(BaseDataset):
@@ -137,24 +199,22 @@ class LFW(BaseDataset):
         except:
             return 1, 1
 
-class Cifar10(BaseDataset):
+class Cifar10(BaseDataset2):
     """docstring for Cifar10"""
 
     def __init__(self, config):
         config = deepcopy(config)
         self.prediction_attribute = config["prediction_attribute"]
         self.protected_attribute = config["protected_attribute"]
-        try:
-            if config["train"] is True:
-                label_csv = pd.read_csv(config["path"] +
-                                        "cifar10_label_train.csv")
-                config["path"] += "/train"
-            else:
-                label_csv = pd.read_csv(config["path"] + "cifar10_label_val.csv")
-                config["path"] += "/val"
-            self.label_csv = label_csv.set_index("file")
-        except:
-            self.label_csv = None
+
+        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
+        self.data_to_run_on = None
+
+        if config["train"] is True:
+            self.data_to_run_on = self.train_dict
+        else:
+            self.data_to_run_on = self.val_dict
+
         super(Cifar10, self).__init__(config)
         self.label_mapping = {}
         self.label_mapping["class"] = {"airplane": 0,
@@ -172,20 +232,19 @@ class Cifar10(BaseDataset):
 
     def load_label(self, filepath, label_type):
         try:
-            reg_exp = r'//(.*/\d+\.{})'
-            filename = re.search(reg_exp.format(self.format), filepath).group(1)
-            labels_row = self.label_csv.loc[filename]   
             if label_type == "pred":
-                pred_label = labels_row[self.prediction_attribute]
-                return self.label_mapping[self.prediction_attribute][pred_label]            
+                label_name = self.prediction_attribute
+                attr = self.prediction_attribute
             else:
-                privacy_label = labels_row[self.protected_attribute]
-                return self.label_mapping[self.protected_attribute][privacy_label]
-            # pred_label = labels_row[self.prediction_attribute]
-            # privacy_label = labels_row[self.protected_attribute]
-            # return self.label_mapping[self.prediction_attribute][pred_label], self.label_mapping[self.protected_attribute][privacy_label]
+                label_name = self.protected_attribute
+                attr = self.protected_attribute
+            d = self.data_to_run_on[label_name][filepath]
+            d = self.label_mapping[attr][d]
+            return d
         except:
             return 1, 1
+
+
 
 
 class CelebA(datasets.CelebA):
@@ -238,200 +297,6 @@ class CelebA(datasets.CelebA):
                   'filename': filename}
         return sample
 
-class BaseDataset2(data.Dataset):
-    """docstring for BaseDataset"""
-
-    def __init__(self, config):
-        super(BaseDataset2, self).__init__()
-        self.format = config["format"]
-        self.set_indicies(config["path"])
-        self.transforms = config["transforms"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.config = config
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-
-    def set_indicies(self, path):
-        filepaths = path + "/*.{}".format(self.format)
-        num_of_images = self.data_to_run_on['set'].data.shape[0]
-        self.indicies = [i for i in range(num_of_images)]
-
-    def load_image(self, i):
-        img = Image.fromarray(self.data_to_run_on['set'].data[i])
-        return img
-
-    @staticmethod
-    def to_tensor(obj):
-        return torch.tensor(obj)
-
-    @abstractmethod
-    def load_label(self):
-        pass
-
-    def __getitem__(self, index):
-        filepath = self.indicies[index]
-        if self.config["train"] is True:
-            filename = "train/"+str(filepath)+".jpg"
-        else:
-            filename = "val/"+str(filepath)+".jpg"
-        img = self.load_image(filepath)
-        img = self.transforms(img)
-        pred_label = self.load_label(filepath, "pred")
-        pred_label = self.to_tensor(pred_label)
-        if self.protected_attribute == "data":
-            privacy_label = img
-        else:
-            privacy_label = self.load_label(filepath, "privacy")
-            privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
-        return sample
-
-    def __len__(self):
-        return len(self.indicies)
-
-class Cifar10_2(BaseDataset2):
-    """docstring for Cifar10"""
-
-    def __init__(self, config):
-        config = deepcopy(config)
-        self.prediction_attribute = config["prediction_attribute"]
-        self.protected_attribute = config["protected_attribute"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.data_to_run_on = None
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-        super(Cifar10_2, self).__init__(config)
-        self.label_mapping = {}
-        self.label_mapping["class"] = {"airplane": 0,
-                                      "automobile": 1,
-                                      "bird": 2,
-                                      "cat": 3,
-                                      "deer": 4,
-                                      "dog": 5,
-                                      "frog": 6,
-                                      "horse": 7,
-                                      "ship": 8,
-                                      "truck": 9}
-        self.label_mapping["animated"] = {"no": 0,
-                                      "yes": 1}
-
-    def load_label(self, filepath, label_type):
-        # print("filepath:", filepath)
-        # print("label_type:", label_type)
-        # print("self:", self.data_to_run_on)
-        # print("d:", d)
-        # print("-----")
-        try:
-            if label_type == "pred":
-                label_name = self.prediction_attribute
-                attr = self.prediction_attribute
-            else:
-                label_name = self.protected_attribute
-                attr = self.protected_attribute
-            d = self.data_to_run_on[label_name][filepath]
-            d = self.label_mapping[attr][d]
-            return d
-        except:
-            return 1, 1
-
-class BaseDataset3(data.Dataset):
-    """docstring for BaseDataset"""
-
-    def __init__(self, config):
-        super(BaseDataset3, self).__init__()
-        self.format = config["format"]
-        self.set_indicies(config["path"])
-        self.transforms = config["transforms"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.config = config
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-
-    def set_indicies(self, path):
-        filepaths = path + "/*.{}".format(self.format)
-        num_of_images = self.data_to_run_on['set'].data.shape[0]
-        self.indicies = [i for i in range(num_of_images)]
-
-    def load_image(self, i):
-        img = Image.fromarray(self.data_to_run_on['set'].data[i])
-        return img
-
-    @staticmethod
-    def to_tensor(obj):
-        return torch.tensor(obj)
-
-    @abstractmethod
-    def load_label(self):
-        pass
-
-    def __getitem__(self, index):
-        filepath = self.indicies[index]
-        filename = "challenge/"+str(filepath)+".jpg"
-        img = self.load_image(filepath)
-        img = self.transforms(img)
-        pred_label = self.load_label(filepath, "pred")
-        pred_label = self.to_tensor(pred_label)
-        if self.protected_attribute == "data":
-            privacy_label = img
-        else:
-            privacy_label = self.load_label(filepath, "privacy")
-            privacy_label = self.to_tensor(privacy_label)
-        sample = {'img': img, 'prediction_label': pred_label, 'private_label': privacy_label,
-            'filepath': filepath, 'filename': filename}
-        return sample
-
-    def __len__(self):
-        return len(self.indicies)
-
-class Cifar10_3(BaseDataset3):
-    """docstring for Cifar10, challenge loader"""
-
-    def __init__(self, config):
-        # 'train only with test loader'
-        config = deepcopy(config)
-        self.prediction_attribute = config["prediction_attribute"]
-        self.protected_attribute = config["protected_attribute"]
-        self.train_dict, self.val_dict = dpd.load_cifar_as_dict(config["path"])
-        self.data_to_run_on = None
-        if config["train"] is True:
-            self.data_to_run_on = self.train_dict
-        else:
-            self.data_to_run_on = self.val_dict
-        super(Cifar10_3, self).__init__(config)
-        self.label_mapping = {}
-        self.label_mapping["class"] = {"airplane": 0,
-                                      "automobile": 1,
-                                      "bird": 2,
-                                      "cat": 3,
-                                      "deer": 4,
-                                      "dog": 5,
-                                      "frog": 6,
-                                      "horse": 7,
-                                      "ship": 8,
-                                      "truck": 9}
-        self.label_mapping["animated"] = {"no": 0,
-                                      "yes": 1}
-
-    def load_label(self, filepath, label_type):
-        try:
-            if label_type == "pred":
-                label_name = self.prediction_attribute
-                attr = self.prediction_attribute
-            else:
-                label_name = self.protected_attribute
-                attr = self.protected_attribute
-            d = self.data_to_run_on[label_name][filepath]
-            d = self.label_mapping[attr][d]
-            return d
-        except:
-            return 1, 1
 
 def load_challenge_data_set(experiment_path):
     challenge_dir = os.path.join(experiment_path, "challenge")
@@ -449,6 +314,7 @@ class Challenge(BaseDataset):
         self.set_filepaths(config["challenge_dir"])
         self.protected_attribute = config["protected_attribute"]
 
+        self.transforms = config["transforms"]
         if config["dataset"] == "fairface":
             self.dataset_obj = FairFace(config)
         else:
@@ -479,12 +345,12 @@ class Challenge(BaseDataset):
         filename = filepath.split('/')[-1].split('.')[0]
         z = self.load_tensor(filepath)
         imgpath = self.get_imgpath(filename)
+        img = self.load_image(imgpath)
         if self.protected_attribute == "data":
-            img = self.load_image(imgpath)
             privacy_label = self.dataset_obj.transforms(img)
         else:
             privacy_label = self.load_label(imgpath, "privacy")
             privacy_label = self.to_tensor(privacy_label)
-        sample = {"z": z, "x": privacy_label, "filename": filename}
+        img = self.transforms(img)
+        sample = {"z": z, "x": privacy_label, "filename": filename, "img": img} # include img for evaluating attacks
         return sample
-

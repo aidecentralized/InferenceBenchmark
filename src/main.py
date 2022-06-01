@@ -10,7 +10,7 @@ parser.add_argument('-b', nargs='?', default=b_default, type=open,
 parser.add_argument('-s', nargs='?', default=s_default, type=open,
                     help='filepath for system config, default: {}'.format(s_default))
 
-
 args = parser.parse_args()
+
 scheduler = Scheduler(args)
 scheduler.run_job()

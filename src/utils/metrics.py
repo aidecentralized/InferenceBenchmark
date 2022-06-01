@@ -18,10 +18,10 @@ class PSNR:
 
 class MetricLoader():
     # Add more metrics
-    def __init__(self, device=None):
+    def __init__(self, device=None, data_range=1):
         self.l1_dist = nn.L1Loss()
         self.ce = nn.CrossEntropyLoss()
-        self._ssim = pytorch_msssim.SSIM()
+        self._ssim = pytorch_msssim.SSIM(data_range=data_range)
         self.l2_dist = nn.MSELoss()
         self._psnr = PSNR()
         _lpips = lpips.LPIPS(net='vgg')
@@ -38,6 +38,9 @@ class MetricLoader():
 
     def cross_entropy(self, preds, lbls):
         return self.ce(preds, lbls)
+    
+    def KLdivergence(self, preds, y):
+        return nn.KLDivLoss(reduction = 'batchmean')(torch.log(preds), y)
 
     def ssim(self, img1, img2):
         return self._ssim(img1, img2)
