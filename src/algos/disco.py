@@ -51,16 +51,22 @@ class Disco(SimbaDefence):
 
     def forward(self, items):
         x = items["x"]
-        unpruned_z = self.client_model(x)
-        self.z = self.pruner_model(unpruned_z)
+        self.unpruned_z_out = self.client_model(x)
+        self.unpruned_z_in = self.unpruned_z_out.detach()
+        self.unpruned_z_in.requires_grad = True
+        self.pruned_z_out = self.pruner_model(self.unpruned_z_in)
 
-        x_recons = self.proxy_adv_model(self.z)
+        self.pruned_z_in = self.pruned_z_out.detach()
+        self.pruned_z_in.requires_grad = True
+        
+        x_recons = self.proxy_adv_model(self.pruned_z_in)
         self.adv_loss = self.loss(x_recons, x)
+
         self.utils.logger.add_entry(self.mode + "/" + self.adv_tag,
                                     self.adv_loss.item())
-        z = self.z.detach()
-        z.requires_grad = True
-        return z
+        pruned_z_in = self.pruned_z_out.detach()
+        pruned_z_in.requires_grad = True
+        return pruned_z_in
 
     def backward(self, items):
         """DISCO backprop is a little bit tricky so here is the explanation:
@@ -81,27 +87,22 @@ class Disco(SimbaDefence):
         self.proxy_adv_optim.zero_grad()
         self.pruner_optim.zero_grad()
 
-        # The client model is only trained to maximize utility,
-        # so we backprop it first
-        self.z.backward(server_grads, retain_graph=True)
-        self.client_optim.step()
+        # backprop through rec. loss and update proxy adv
+        self.adv_loss.backward()
+        self.proxy_adv_optim.step()
 
-        # Scale the gradients of the pruner
+        # backprop through the pruner model to pass gradients to the client model
+        self.pruned_z_out.backward(server_grads, retain_graph=True)
+        self.unpruned_z_out.backward(self.unpruned_z_in.grad)
+        self.client_optim.step()
+        # Scale the task loss gradient with 1 - alpha
         # Higher the alpha, higher the weight for adv loss would be
         for params in self.pruner_model.parameters():
             params.grad *= (1 - self.alpha)
 
-        # Backprop on adversary then
-        # Flip the gradient sign for maximizing proxy adversary's loss
-        self.adv_loss *= -1 * self.alpha
-        self.adv_loss.backward()
+        # backprop through proxy adv loss
+        self.pruned_z_out.backward(-1 * self.alpha * self.pruned_z_in.grad)
         self.pruner_optim.step()
-
-        # Finally backprop on the adv parameters
-        # Flip the sign and divide by alpha to undo the previous operation
-        for params in self.proxy_adv_model.parameters():
-            params.grad *= -1 / self.alpha
-        self.proxy_adv_optim.step()
 
 
 class PruningNetwork(nn.Module):
@@ -122,7 +123,7 @@ class PruningNetwork(nn.Module):
             self.model.fc = nn.Sequential(nn.Flatten(),
                                           nn.Linear(num_ftrs, self.logits))
 
-            self.model = nn.ModuleList(self.model.children())
+            self.model = nn.ModuleList(list(self.model.children())[self.split_layer:])
             self.model = nn.Sequential(*self.model)
         elif self.pruning_style == "random":
             # decoy layer to allow creation of optimizer
@@ -155,29 +156,17 @@ class PruningNetwork(nn.Module):
         num_prunable_channels = int(num_channels * ratio)
         threshold_score = torch.sort(fmap_score)[0][:, num_prunable_channels].unsqueeze(1)
         fmap_score = self.custom_sigmoid(fmap_score, threshold_score)
-        # pruning_vector = fmap_score.unsqueeze(dim=2).unsqueeze(dim=3)
-        # x = x * pruning_vector
-        try:
-            index_array = torch.arange(num_channels).repeat(x.shape[0], 1).cuda() # commented out for cude?
-        except:
-            index_array = torch.arange(num_channels).repeat(x.shape[0], 1)
-        indices = index_array[fmap_score < 0.5]
-        return indices
+        return fmap_score
 
     def network_forward(self, x):
-        for i, l in enumerate(self.model):
-            if i <= self.split_layer:
-                continue
-            #print(l, x.shape, x.device)
-            x = l(x)
-        #print(x.shape, x.device)
-        return x
+        return self.model(x)
 
     def forward(self, x):
         if self.pruning_style == "random":
             indices = self.get_random_channels(x, self.pruning_ratio)
             x = self.prune_channels(x, indices)
         elif self.pruning_style == "learnable":
-            indices = self.get_channels_from_network(x, self.pruning_ratio)
-            x = self.prune_channels(x, indices)
-        return x, indices
+            # get score for feature maps
+            channel_score = self.get_channels_from_network(x, self.pruning_ratio)
+            x = x*channel_score.unsqueeze(-1).unsqueeze(-1)
+        return x

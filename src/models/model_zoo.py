@@ -44,9 +44,9 @@ class Model(nn.Module):
                 model.fc = nn.Sequential(nn.Flatten(),
                                         nn.Linear(num_ftrs, logits))
                 model = nn.ModuleList(list(model.children())[self.split_layer:])
-                self.model = nn.Sequential(*model)
+                model = nn.Sequential(*model)
 
-        self.model = self.utils.model_on_gpus(self.model)
+        self.model = self.utils.model_on_gpus(model)
         self.utils.register_model("server_model", self.model)
 
     def assign_optim(self, config):
@@ -55,8 +55,8 @@ class Model(nn.Module):
             self.optim = torch.optim.Adam(self.model.parameters(), lr)
 
     def forward(self, x):
-        x = self.model(x)
-        return nn.functional.softmax(x, dim=1)
+        y = self.model(x)
+        return nn.functional.softmax(y, dim=1)
 
     def compute_loss(self, preds, y):
         self.loss = self.loss_fn(preds, y)
