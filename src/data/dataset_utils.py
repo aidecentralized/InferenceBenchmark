@@ -314,6 +314,7 @@ class Challenge(BaseDataset):
         self.set_filepaths(config["challenge_dir"])
         self.protected_attribute = config["protected_attribute"]
 
+        self.transforms = config["transforms"]
         if config["dataset"] == "fairface":
             self.dataset_obj = FairFace(config)
         else:
@@ -344,11 +345,12 @@ class Challenge(BaseDataset):
         filename = filepath.split('/')[-1].split('.')[0]
         z = self.load_tensor(filepath)
         imgpath = self.get_imgpath(filename)
+        img = self.load_image(imgpath)
         if self.protected_attribute == "data":
-            img = self.load_image(imgpath)
             privacy_label = self.dataset_obj.transforms(img)
         else:
             privacy_label = self.load_label(imgpath, "privacy")
             privacy_label = self.to_tensor(privacy_label)
-        sample = {"z": z, "x": privacy_label, "filename": filename}
+        img = self.transforms(img)
+        sample = {"z": z, "x": privacy_label, "filename": filename, "img": img} # include img for evaluating attacks
         return sample

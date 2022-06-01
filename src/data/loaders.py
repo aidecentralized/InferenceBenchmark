@@ -72,15 +72,12 @@ class DataLoader():
         elif self.config["dataset"] == "UTKFace":
             train_config["format"] = "jpg"
             dataset = UTKFace(train_config)
-
         if self.config["split"] is True and not isattack:
             train_dataset, test_dataset = self.get_split(dataset)
-
 
         if isattack:
             dataset = Challenge(train_config)
             train_dataset, test_dataset = self.get_split(dataset)
-
         self.trainloader = torch.utils.data.DataLoader(
             train_dataset, batch_size=self.config["train_batch_size"],
             shuffle=True, num_workers=5, drop_last=True)
