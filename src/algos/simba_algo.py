@@ -10,6 +10,8 @@ class SimbaBase(nn.Module):
     def __init__(self, utils):
         super(SimbaBase, self).__init__()
         self.utils = utils
+        self.detached = True
+        self.logs_enabled = True
 
     @abstractmethod
     def forward(self):
@@ -33,6 +35,12 @@ class SimbaBase(nn.Module):
         for _, model in self.utils.model_registry.items():
             model.eval()
         self.client_model.eval()
+    
+    def detach(self, detached):
+        self.detached = detached
+
+    def enable_logs(self, enabled):
+        self.logs_enabled = enabled
 
     def init_client_model(self, config):
         pretrained = config["pretrained"]

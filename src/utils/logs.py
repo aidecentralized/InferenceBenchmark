@@ -23,7 +23,7 @@ class Logs():
         self.items[key] = []
 
     def set_log_freq(self, total_iters):
-        log_freq = 10 # 10 times every epoch
+        log_freq = 100 # 10 times every epoch CHANGE THIS BACK
         self.trigger_freq = total_iters // log_freq
         self.total_iters = total_iters
 
@@ -64,9 +64,11 @@ class Logs():
             val = data
         self.items[key].append(val)
         self.curr_iters += 1
+        # print("ADDED ENTRY: ", self.curr_iters, self.trigger_freq, key, key.startswith("train"))
         # flush logs only if we are in validation mode
         if key.startswith("train"):
             # Since iteration is reset after every epoch
+            # print(self.curr_iters % self.trigger_freq)
             iteration = self.epoch * self.total_iters + self.curr_iters
             self.log_tb(key, val, iteration)
             if self.curr_iters % self.trigger_freq == 0:

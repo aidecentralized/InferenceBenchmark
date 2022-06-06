@@ -46,6 +46,9 @@ class InputModelOptimization(SimbaAttack):
         self.obf_model.client_model.module.load_state_dict(wts)
     else:
         self.obf_model.client_model.load_state_dict(wts)
+    
+    self.obf_model.enable_logs(False)
+    self.obf_model.detach(False)
 
     self.model = self.obf_model # to prevent errors thrown
 
@@ -93,8 +96,13 @@ class InputModelOptimization(SimbaAttack):
       z = items["z"]
       img = items["img"]
 
+      print("BRUH: ", self.metric.l2(z, self.obf_model({"x": img})))
+
       gen_model = self.create_gen_model()
-      rand_inp = torch.rand((z.shape[0], 3, 128, 128)).to(self.utils.device) 
+      rand_inp_og = torch.rand((z.shape[0], 3, 128, 128)).detach().to(self.utils.device)
+      inp_noise = rand_inp_og.detach().clone()
+
+
 
 
       # ys.requires_grad_(True)
@@ -104,30 +112,63 @@ class InputModelOptimization(SimbaAttack):
       self.utils.logger.set_log_freq(self.iters)
       
       # log the lowest loss
-      lowest_loss = float("inf")
-      lowest_ys = gen_model(rand_inp)[:,:,:128, :128]
+      best_ssim = 0
+      best_ys = gen_model(rand_inp_og)[:,:,:128, :128]
 
-      for _ in range(self.iters):
+      for i in range(self.iters):
+
+        if i < 10000:
+            # Noise in input space
+            rand_inp = rand_inp_og + (inp_noise.normal_() * 10)
+            for n in [x for x in gen_model.parameters() if len(x) == 4]:
+                n = n + n.detach().clone().normal_()*n.std()/50
+        elif i < 15000:
+            # Noise in input space
+            rand_inp = rand_inp_og + (inp_noise.normal_() * 2)
+            for n in [x for x in gen_model.parameters() if len(x) == 4]:
+                n = n + n.detach().clone().normal_()*n.std()/50
+        elif i < 20000:
+            # Noise in input space
+            rand_inp = rand_inp_og + (inp_noise.normal_() / 2)
+            for n in [x for x in gen_model.parameters() if len(x) == 4]:
+                n = n + n.detach().clone().normal_()*n.std()/50
+        
+        rand_inp = rand_inp.to(self.utils.device)
+
         optim.zero_grad()
-        ys = gen_model(rand_inp)[:,:,:128, :128]
-        out = self.obf_model({"x": ys}, False)
+        ys = gen_model(rand_inp_og)[:,:,:128, :128]
+        out = self.obf_model({"x": ys})
         loss = self.loss_fn(out, z)
 
         ssim = self.metric.ssim(img, ys)
-        self.utils.logger.add_entry(prefix + self.ssim_tag,
-                                      ssim.item())
+        # self.utils.logger.add_entry(prefix + self.ssim_tag,
+        #                               ssim.item())
+        self.utils.logger.add_entry(prefix + self.l2_tag,
+                                      loss.item())
 
-        if ssim < lowest_loss: 
-          lowest_loss = ssim
-          lowest_ys = torch.clone(ys) 
+        if ssim > best_ssim: 
+          best_ssim = ssim
+          best_ys = torch.clone(ys) 
+
+        if self.utils.logger.curr_iters % self.utils.logger.trigger_freq == 0:
+          print("SSIM: ", ssim.item())
+        
+        if self.utils.logger.curr_iters % (self.utils.logger.trigger_freq*10) == 0:
+          print("SAVED IMAGE: ", ssim.item())
+          save_image(best_ys, f"./temp_imgs/{self.utils.logger.epoch}_ys_{self.utils.logger.curr_iters}.png")
 
         (self.sign * loss).backward()
         optim.step()
+      
+      save_image(best_ys, f"./temp_imgs/{self.utils.logger.epoch}_ys.png")
+      save_image(img, f"./temp_imgs/{self.utils.logger.epoch}_img.png")
 
-      ssim = self.metric.ssim(img, lowest_ys)
-      self.utils.logger.add_entry(prefix + self.ssim_tag,
-                                    ssim.item())
+      # ssim = self.metric.ssim(img, best_ys)
+      # self.utils.logger.add_entry(prefix + self.ssim_tag,
+      #                               ssim.item())
       self.utils.logger.flush_epoch()
+
+      
 
   def backward(self, _):
     pass

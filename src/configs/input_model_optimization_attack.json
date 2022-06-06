@@ -7,7 +7,7 @@
     "optimizer": "adam",
     "lr": 0.01,
     "attribute": "race",
-    "iters": 2000,
+    "iters": 25000,
     "target_model": "nopeek"
   },
   "total_epochs": 1,
