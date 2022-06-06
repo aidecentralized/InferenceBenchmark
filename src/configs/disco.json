@@ -2,7 +2,7 @@
     "method": "disco",
     "client": {"model_name": "resnet18", "split_layer": 6,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4,
-               "pruning_ratio": 0.9, "pruning_style": "learnable", "alpha": 0.5,
+               "pruning_ratio": 0.99, "pruning_style": "learnable", "alpha": 0.5,
                "grid_crop" : false,
                "proxy_adversary" : {"img_size": 128}},
     "server": {"model_name": "resnet18", "split_layer":6, "logits": 2, "pretrained": false,

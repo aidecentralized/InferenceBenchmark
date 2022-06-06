@@ -67,7 +67,7 @@ class Model(nn.Module):
                 model.fc = nn.Sequential(nn.Flatten(),
                                         nn.Linear(num_ftrs, logits))
                 model = nn.ModuleList(list(model.children())[self.split_layer:])
-                model = nn.Sequential(*model)
+                self.model = nn.Sequential(*model)
 
 
             if config["model_name"].startswith("vgg"):
