@@ -6,7 +6,8 @@
 
 ### Contributors to the codebase so far -
 #### 1. Abhishek Singh
-#### 2. Ethan Garza
-#### 3. Emily Zhang
-#### 4. John Mose
-#### 5. Rohan Sukumaran
+#### 2. Justin Yu
+#### 3. John Mose
+#### 4. Rohan Sukumaran
+#### 5. Emily Zhang
+#### 6. Ethan Garza
