@@ -21,14 +21,15 @@ def config_loader(filepath):
     the calculations of dynamic variables.
     """
     b_json, s_json = load_config_as_dict(filepath)
-    return process_config(b_json, s_json)
+    return process_config(combine_configs(b_json, s_json))
 
-def process_config(s_json, b_json):
+def combine_configs(s_json, b_json):
     experiment_dict = s_json
     research_dict = b_json
     research_dict.update(experiment_dict)
-    json_dict = research_dict
+    return research_dict
 
+def process_config(json_dict):
     json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
     json_dict['train_batch_size'] = json_dict.get('training_batch_size', 64) * json_dict['num_gpus']
     json_dict['experiment_type'] = json_dict.get('experiment_type') or "defense"

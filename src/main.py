@@ -12,5 +12,7 @@ parser.add_argument('-s', nargs='?', default=s_default, type=open,
 
 args = parser.parse_args()
 
-scheduler = Scheduler(args)
+scheduler = Scheduler()
+scheduler.assign_config_by_path(args)
+scheduler.initialize()
 scheduler.run_job()

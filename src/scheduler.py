@@ -1,11 +1,17 @@
 from interface import (load_config, load_algo, load_data, load_model, load_utils)
 
 class Scheduler():
-    def __init__(self, config_path) -> None:
-        self.initialize(config_path)
+    def __init__(self) -> None:
+        pass
 
-    def initialize(self, config_path) -> None:
+    def assign_config_by_path(self, config_path) -> None:
         self.config = load_config(config_path)
+
+    def assign_config_by_dict(self, config) -> None:
+        self.config = config
+
+    def initialize(self) -> None:
+        assert self.config is not None, "Config should be set when initializing"
         self.utils = load_utils(self.config)
 
         if not self.config["experiment_type"] == "challenge":
