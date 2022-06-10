@@ -103,6 +103,7 @@ class InputOptimization(SimbaAttack):
         (self.sign * loss).backward()
         optim.step()
 
+      return img
       ssim = self.metric.ssim(img, lowest_ys)
       self.utils.logger.add_entry(prefix + self.ssim_tag,
                                     ssim.item())

@@ -2,11 +2,17 @@ from interface import (load_config, load_algo, load_data, load_model, load_utils
 import torch, random, numpy
 
 class Scheduler():
-    def __init__(self, config_path) -> None:
-        self.initialize(config_path)
+    def __init__(self) -> None:
+        pass
 
-    def initialize(self, config_path) -> None:
+    def assign_config_by_path(self, config_path) -> None:
         self.config = load_config(config_path)
+
+    def assign_config_by_dict(self, config) -> None:
+        self.config = config
+
+    def initialize(self) -> None:
+        assert self.config is not None, "Config should be set when initializing"
         self.utils = load_utils(self.config)
 
         # set seeds
@@ -78,7 +84,7 @@ class Scheduler():
             self.model.compute_loss(data,items["pred_lbls"])
 
     def attack_train(self) -> None:
-        if "no_train" in self.config and self.config["no_train"]:
+        if self.config.get("no_train"):
             return
         self.algo.train()
         for _, sample in enumerate(self.dataloader.test):
