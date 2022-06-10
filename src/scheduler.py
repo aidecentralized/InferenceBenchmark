@@ -1,4 +1,5 @@
 from interface import (load_config, load_algo, load_data, load_model, load_utils)
+import torch, random, numpy
 
 class Scheduler():
     def __init__(self) -> None:
@@ -13,6 +14,10 @@ class Scheduler():
     def initialize(self) -> None:
         assert self.config is not None, "Config should be set when initializing"
         self.utils = load_utils(self.config)
+
+        # set seeds
+        seed = self.config["seed"]
+        torch.manual_seed(seed); random.seed(seed); numpy.random.seed(seed)
 
         if not self.config["experiment_type"] == "challenge":
             self.utils.copy_source_code(self.config["results_path"])
