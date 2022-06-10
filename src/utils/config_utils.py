@@ -32,10 +32,11 @@ def process_config(s_json, b_json):
     json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
     json_dict['train_batch_size'] = json_dict.get('training_batch_size', 64) * json_dict['num_gpus']
     json_dict['experiment_type'] = json_dict.get('experiment_type') or "defense"
+    json_dict['seed'] = json_dict.get('seed') or 1
 
     if 'manual_expt_name' in json_dict.keys():
         '''serves two use cases - generating challenge for past experiments which followed different
-        naming convention. The other case is when we want to transfer a pretrained pruner network to
+        naming convention. The other case is when we want to transfer a pretrained obfuscation network to
         a different client model.'''
         experiment_name = json_dict['manual_expt_name']
     elif json_dict["experiment_type"] in ["defense", "challenge"]:
@@ -69,7 +70,7 @@ def process_config(s_json, b_json):
                                      "/challenge/"
 
     experiments_folder = json_dict["experiments_folder"]
-    results_path = experiments_folder + experiment_name
+    results_path = experiments_folder + experiment_name + f"_seed{json_dict['seed']}"
 
     log_path = results_path + "/logs/"
     challenge_log_path = results_path + "/challenge-logs/"
