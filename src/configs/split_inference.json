@@ -2,7 +2,7 @@
     "method": "split_inference",
     "client": {"model_name": "resnet18", "split_layer": 6,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4},
-    "server": {"model_name": "resnet18", "split_layer":6, "logits": 2, "pretrained": false,
+    "server": {"model_name": "resnet18", "split_layer": 6, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},
     "learning_rate": 0.01,
     "total_epochs": 150,
@@ -14,5 +14,6 @@
     "img_size": 128,
     "split": false,
     "test_batch_size": 64,
+    "seed": 12,
     "exp_keys": []
 }
