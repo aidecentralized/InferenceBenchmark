@@ -1,3 +1,4 @@
+from algos.complex_nn import ComplexNN
 from algos.disco import Disco
 from algos.input_optimization import InputOptimization
 from algos.split_inference import SplitInference
