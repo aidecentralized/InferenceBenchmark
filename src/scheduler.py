@@ -84,7 +84,7 @@ class Scheduler():
             self.model.compute_loss(data,items["pred_lbls"])
 
     def attack_train(self) -> None:
-        if "no_train" in self.config and self.config["no_train"]:
+        if self.config.get("no_train"):
             return
         self.algo.train()
         for _, sample in enumerate(self.dataloader.test):

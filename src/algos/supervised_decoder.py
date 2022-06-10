@@ -47,32 +47,33 @@ class SupervisedDecoder(SimbaAttack):
 
     def forward(self, items):
         z = items["z"]
-        self.x = self.model(z)
-        x = items["x"]
+        self.reconstruction = self.model(z)
+        self.orig = items["x"]
 
-        self.loss = self.loss_fn(self.x, x)
-        self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
-                                    self.loss.item())
-    
-    def backward(self, items):
+        self.loss = self.loss_fn(self.reconstruction, self.orig)
+
         if self.mode == "val" and self.attribute == "data":
             prefix = "val/"
 
-            ssim = self.metric.ssim(self.x, x)
+            ssim = self.metric.ssim(self.reconstruction, self.orig)
             self.utils.logger.add_entry(prefix + self.ssim_tag,
                                         ssim.item())
 
-            l1 = self.metric.l1(self.x, x)
+            l1 = self.metric.l1(self.reconstruction, self.orig)
             self.utils.logger.add_entry(prefix + self.l1_tag,
                                         l1.item())
 
-            l2 = self.metric.l2(self.x, x)
+            l2 = self.metric.l2(self.reconstruction, self.orig)
             self.utils.logger.add_entry(prefix + self.l2_tag,
                                         l2.item())
 
-            psnr = self.metric.psnr(self.x, x)
+            psnr = self.metric.psnr(self.reconstruction, self.orig)
             self.utils.logger.add_entry(prefix + self.psnr_tag,
                                         psnr.item())
+
+        self.utils.logger.add_entry(self.mode + "/" + self.loss_tag,
+                                    self.loss.item())
+        return self.reconstruction
 
     def backward(self, _):
         self.optim.zero_grad()
