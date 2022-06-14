@@ -5,7 +5,6 @@ from algos.nopeek import NoPeek
 from algos.simba_algo import SimbaAttack
 from utils.metrics import MetricLoader
 import torch
-from torchvision.utils import save_image
 from models.skip import skip
 import os
 
@@ -91,15 +90,6 @@ class InputModelOptimization(SimbaAttack):
         self.sign = 1 # to minimize lpips
 
     self.save_images = True
-    self.save_image_path = os.path.join(target_config["log_path"], "images")
-    print(self.save_image_path)
-
-  def save_image(self, image, name):
-    dir = self.save_image_path
-    if not os.path.exists(dir):
-      os.makedirs(dir)
-    path = os.path.join(dir, name)
-    save_image(image, path)
 
   def forward(self, items):
     if self.mode == "val":
@@ -146,7 +136,7 @@ class InputModelOptimization(SimbaAttack):
         loss = self.loss_fn(out, z)
 
         ssim = self.metric.ssim(img, ys)
-        self.utils.logger.add_entry(prefix + self.l2_tag,
+        self.utils.logger.add_entry(prefix + self.ssim_tag,
                                       ssim.item())
 
         if ssim > best_ssim: 
@@ -157,14 +147,14 @@ class InputModelOptimization(SimbaAttack):
         #   print("SSIM: ", ssim.item())
         
         if self.save_images and self.utils.logger.curr_iters % (self.utils.logger.trigger_freq) == 0:
-          self.save_image(ys, f"{self.utils.logger.epoch}_ys_{self.utils.logger.curr_iters}.png")
+          self.utils.save_image(ys, f"{self.utils.logger.epoch}_ys_{self.utils.logger.curr_iters}.png")
 
         (self.sign * loss).backward()
         optim.step()
       
       if self.save_images:
-        self.save_image(img, f"{self.utils.logger.epoch}_img.png")
-        self.save_image(best_ys, f"{self.utils.logger.epoch}_ys.png")
+        self.utils.save_image(img, f"{self.utils.logger.epoch}_img.png")
+        self.utils.save_image(best_ys, f"{self.utils.logger.epoch}_ys.png")
       
       self.utils.logger.flush_epoch()
 
