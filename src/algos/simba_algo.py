@@ -36,7 +36,7 @@ class SimbaBase(nn.Module):
             model.eval()
         self.client_model.eval()
     
-    def detach(self, detached):
+    def set_detached(self, detached):
         self.detached = detached
 
     def enable_logs(self, enabled):
