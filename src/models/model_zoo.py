@@ -7,6 +7,13 @@ from models.Unet import StochasticUNet
 from models.Xception import Xception
 
 
+def get_resnet18(logits):
+    model = models.resnet18(pretrained=False)
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Sequential(nn.Flatten(),
+                             nn.Linear(num_ftrs, logits))
+    return model
+
 class Model(nn.Module):
     def __init__(self, config, utils):
         super(Model, self).__init__()
@@ -48,7 +55,7 @@ class Model(nn.Module):
                 
             elif config["model_name"] == "resnet34":
                 model = models.resnet34(pretrained=pretrained)
-                
+
             elif config["model_name"] == "resnet50":
                 model = models.resnet50(pretrained=pretrained)
 

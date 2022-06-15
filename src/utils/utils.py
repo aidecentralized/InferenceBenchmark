@@ -8,6 +8,7 @@ from glob import glob
 import shutil
 from torchvision.utils import save_image
 
+
 class Utils():
     def __init__(self, config) -> None:
         self.config = config
@@ -20,6 +21,9 @@ class Utils():
             self.device = torch.device('cuda:{}'.format(gpu_id))
         else:
             self.device = torch.device('cpu')
+
+    def tensor_on_gpu(self, t):
+        return t.to(self.device)
 
     def init_logger(self):
         self.logger = Logs(self.config, self.config["experiment_type"])
