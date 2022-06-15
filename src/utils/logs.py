@@ -23,7 +23,7 @@ class Logs():
         self.items[key] = []
 
     def set_log_freq(self, total_iters):
-        log_freq = 10 # 10 times every epoch
+        log_freq = 10
         self.trigger_freq = total_iters // log_freq
         self.total_iters = total_iters
 

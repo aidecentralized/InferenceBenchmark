@@ -15,6 +15,7 @@ from algos.aioi import AIOI
 
 from algos.supervised_decoder import SupervisedDecoder
 from algos.input_optimization import InputOptimization
+from algos.input_model_optimization import InputModelOptimization
 from algos.discriminator_attacker import DiscriminatorAttack
 
 from data.loaders import DataLoader
@@ -86,6 +87,10 @@ def load_algo(config, utils, dataloader=None):
         config["adversary"]["target_model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
         config["adversary"]["target_model_config"] = path.join(config["experiments_folder"], config["challenge_experiment"], "configs", f"{config['adversary']['target_model']}.json")
         algo = InputOptimization(config["adversary"], utils)
+    elif method == "input_model_optimization":
+        config["adversary"]["target_model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
+        config["adversary"]["target_model_config"] = path.join(config["experiments_folder"], config["challenge_experiment"], "configs", f"{config['adversary']['target_model']}.json")
+        algo = InputModelOptimization(config["adversary"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
         exit()

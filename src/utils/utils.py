@@ -155,4 +155,11 @@ class Utils():
                 model.module.load_state_dict(wts)
             else:
                 model.load_state_dict(wts)
-        self.logger.log_console("models loaded")    
+        self.logger.log_console("models loaded")
+
+    def save_image(self, image, name):
+        dir = self.config["images_path"]
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        path = os.path.join(dir, name)
+        save_image(image, path)
