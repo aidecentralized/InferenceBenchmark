@@ -74,11 +74,13 @@ def process_config(json_dict):
     results_path = experiments_folder + experiment_name + f"_seed{json_dict['seed']}"
 
     log_path = results_path + "/logs/"
+    images_path = results_path + "/images/"
     challenge_log_path = results_path + "/challenge-logs/"
     model_path = results_path + "/saved_models/"
 
     json_dict["experiment_name"] = experiment_name
     json_dict["log_path"] = log_path
+    json_dict["images_path"] = images_path
     json_dict["challenge_log_path"] = challenge_log_path
     json_dict["model_path"] = model_path
     json_dict["results_path"] = results_path

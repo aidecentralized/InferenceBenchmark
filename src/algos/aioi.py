@@ -14,10 +14,10 @@ class AIOI(SimbaDefence):
     def get_secret_priors(self, config):
         if config["dataset"] == "fairface":
             if config["protected_attribute"] == "race":
-                secret_prior = torch.tensor([0.1416, 0.1416, 0.1412, 0.1905, 0.1067, 0.1534, 0.1250]).cuda()
+                secret_prior = torch.tensor([0.1416, 0.1416, 0.1412, 0.1905, 0.1067, 0.1534, 0.1250]).to(self.utils.device)
                 
             elif config["protected_attribute"] == "gender":
-                secret_prior = torch.tensor([0.4797, 0.5203]).cuda()
+                secret_prior = torch.tensor([0.4797, 0.5203]).to(self.utils.device)
         return secret_prior
         
 

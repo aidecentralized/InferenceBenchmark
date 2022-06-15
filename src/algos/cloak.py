@@ -80,10 +80,10 @@ class Cloak(SimbaDefence):
 
     def forward(self, items):
         self.z = self.client_model(items["x"])
-        z = self.z.detach()
-
-        z.requires_grad = True
-        
+        z = self.z
+        if self.detached:
+            z = z.detach()
+            z.requires_grad = True
         return z 
 
     def backward(self, items):

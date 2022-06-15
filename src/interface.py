@@ -1,6 +1,7 @@
 from algos.complex_nn import ComplexNN
 from algos.disco import Disco
 from algos.input_optimization import InputOptimization
+from algos.input_model_optimization import InputModelOptimization
 from algos.split_inference import SplitInference
 from algos.nopeek import NoPeek
 from algos.uniform_noise import UniformNoise
@@ -80,6 +81,10 @@ def load_algo(config, utils, dataloader=None):
         config["adversary"]["target_model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
         config["adversary"]["target_model_config"] = path.join(config["experiments_folder"], config["challenge_experiment"], "configs", f"{config['adversary']['target_model']}.json")
         algo = InputOptimization(config["adversary"], utils)
+    elif method == "input_model_optimization":
+        config["adversary"]["target_model_path"] = path.join(config["experiments_folder"], config["challenge_experiment"], "saved_models", "client_model.pt")
+        config["adversary"]["target_model_config"] = path.join(config["experiments_folder"], config["challenge_experiment"], "configs", f"{config['adversary']['target_model']}.json")
+        algo = InputModelOptimization(config["adversary"], utils)
     else:
         print("Unknown algorithm {}".format(config["method"]))
         exit()
