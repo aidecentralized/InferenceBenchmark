@@ -1,0 +1,27 @@
+{
+  "config_path": "./configs",
+  "defense_models": {
+      "cloak": {
+          "run_groups": {
+              "1": {
+                  "hparams": {
+                      "client.min_scale": [0, 1],
+                      "server.lr": [3e-4, 3e-3]
+                  },
+                  "attacks": {"include": [], "exclude": []}
+              }
+          },
+          "attacks": {
+              "all": true,
+              "include": [],
+              "exclude": []
+          }
+      }
+  },
+  "attack_models": {
+      "supervised_decoder": {
+          "config": "decoder_attack.json",
+          "run_groups": {}
+      }
+  }
+}
