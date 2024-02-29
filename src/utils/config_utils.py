@@ -40,7 +40,7 @@ def process_config(json_dict):
         naming convention. The other case is when we want to transfer a pretrained obfuscation network to
         a different client model.'''
         experiment_name = json_dict['manual_expt_name']
-    elif json_dict["experiment_type"] in ["defense", "challenge"]:
+    elif json_dict["experiment_type"] in ["defense", "challenge", "time_profiling"]:
         experiment_name = "{}_{}_{}_{}_split{}_{}".format(
             json_dict['method'],
             json_dict['dataset'],
