@@ -21,8 +21,12 @@ def translate_into_images(dataset, output_dir, prefix=None):
         new_dir = os.path.join(output_dir, prefix)
         if not os.path.exists(new_dir):
             os.mkdir(new_dir)
+    skip=False
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
+    else:
+        if os.listdir(output_dir):
+            skip=True
     num_of_images = dataset.data.shape[0]
     filenames = []
     filepaths = []
@@ -31,8 +35,10 @@ def translate_into_images(dataset, output_dir, prefix=None):
         if prefix:
             filename = os.path.join(prefix, filename)
         filepath = os.path.join(output_dir, filename)
-        img = Image.fromarray(dataset.data[i])
-        img.save(filepath)
+        if not skip:
+            print(filepath)
+            img = Image.fromarray(dataset.data[i])
+            img.save(filepath)
         filenames.append(filename)
         filepaths.append(filepath)
     return filenames, filepaths
@@ -92,20 +98,20 @@ def load_cifar_as_dict(output_dir):
 
     trainset, valset = load_CIFAR10_dataset(output_dir)
 
-    train_files, train_filepaths = translate_into_images(trainset, output_dir, "train")
-    val_files, val_filepaths = translate_into_images(valset, output_dir, "val")
+    # train_files, train_filepaths = translate_into_images(trainset, output_dir, "train")
+    # val_files, val_filepaths = translate_into_images(valset, output_dir, "val")
     train_labels = load_labels(trainset)
     val_labels = load_labels(valset)
 
     train_dict = dict()
     train_dict["set"] = trainset
-    train_dict["file"] = train_files
+    # train_dict["file"] = train_files
     train_dict["animated"] = map_class_to_animated(trainset)
     train_dict["class"] = train_labels
 
     val_dict = dict()
     val_dict["set"] = valset
-    val_dict["file"] = val_files
+    # val_dict["file"] = val_files
     val_dict["animated"] = map_class_to_animated(valset)
     val_dict["class"] = val_labels
     
@@ -113,6 +119,6 @@ def load_cifar_as_dict(output_dir):
 
 
 if __name__ == '__main__':
-    base_dir = "/home/mit6_91621/cybop/"
+    base_dir = "./datasets/"
     output_dir = base_dir + "cifar10"
     save_and_organize_cifar10_dataset(output_dir)
