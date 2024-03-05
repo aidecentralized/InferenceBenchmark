@@ -42,12 +42,13 @@ class InputModelOptimization(SimbaAttack):
     from interface import load_algo
     self.obf_model = load_algo(target_config, self.utils)
 
-    wts_path = config["target_model_path"]
-    wts = torch.load(wts_path)
-    if isinstance(self.obf_model.client_model, torch.nn.DataParallel):  # type: ignore
-        self.obf_model.client_model.module.load_state_dict(wts)
-    else:
-        self.obf_model.client_model.load_state_dict(wts)
+    if not config["target_model"] == "gaussian_blur":
+      wts_path = config["target_model_path"]
+      wts = torch.load(wts_path)
+      if isinstance(self.obf_model.client_model, torch.nn.DataParallel):  # type: ignore
+          self.obf_model.client_model.module.load_state_dict(wts)
+      else:
+          self.obf_model.client_model.load_state_dict(wts)
     
     self.obf_model.enable_logs(False)
     self.obf_model.set_detached(False)
