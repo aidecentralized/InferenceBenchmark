@@ -26,7 +26,7 @@ class InputOptimization(SimbaAttack):
     from interface import load_algo
     self.model = load_algo(target_config, self.utils)
     
-    wts_path = self.target_config["model_path"] + "/client_model.pt"
+    wts_path = config["target_model_path"]
     wts = torch.load(wts_path)
     if isinstance(self.model.client_model, torch.nn.DataParallel):  # type: ignore
         self.model.client_model.module.load_state_dict(wts)
