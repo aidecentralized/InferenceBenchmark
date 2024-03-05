@@ -1,5 +1,5 @@
 import json
-from utils.config_utils import process_config
+from utils.config_utils import combine_configs, process_config
 from algos.uniform_noise import UniformNoise
 from algos.nopeek import NoPeek
 from algos.simba_algo import SimbaAttack
@@ -19,7 +19,8 @@ class InputOptimization(SimbaAttack):
     # load obfuscator model
     target_exp_config = json.load(open(config["target_model_config"])) #config_loader(config["model_config"])
     system_config = json.load(open("./configs/system_config.json")) #config_loader(config["model_config"])
-    target_config = process_config(system_config, target_exp_config)
+    target_exp_config["client"]["challenge"] = True
+    target_config = process_config(combine_configs(system_config, target_exp_config))
     self.target_config = target_config
 
     from interface import load_algo

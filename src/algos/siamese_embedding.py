@@ -34,6 +34,10 @@ class SiameseEmbedding(SimbaDefence):
         self.initialize(config)
 
     def initialize(self, config):
+        if config.get("challenge", False):
+            self.is_attacked = True
+        else:
+            self.is_attacked = False
         self.client_model = self.init_client_model(config)
         self.put_on_gpus()
         self.utils.register_model("client_model", self.client_model)
@@ -47,11 +51,12 @@ class SiameseEmbedding(SimbaDefence):
 
     def forward(self, items):
         x = items["x"]
-        pred_lbls = items["pred_lbls"]
         self.z = self.client_model(x)
-        self.contrastive_loss = self.loss(self.z, pred_lbls)
-        self.utils.logger.add_entry(self.mode + "/" + self.ct_loss_tag,
-                                    self.contrastive_loss.item())
+        if not self.is_attacked:
+            pred_lbls = items["pred_lbls"]
+            self.contrastive_loss = self.loss(self.z, pred_lbls)
+            self.utils.logger.add_entry(self.mode + "/" + self.ct_loss_tag,
+                                        self.contrastive_loss.item())
         # z will be detached to prevent any grad flow from the client
         z = self.z.detach()
         z.requires_grad = True
