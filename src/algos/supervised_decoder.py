@@ -1,3 +1,4 @@
+import torch
 from algos.simba_algo import SimbaAttack
 from models.image_decoder import Decoder
 from utils.metrics import MetricLoader
@@ -11,6 +12,7 @@ class SupervisedDecoder(SimbaAttack):
     def initialize(self, config):
         self.attribute = config["attribute"]
         self.metric = MetricLoader()
+        self.img_size = config["img_size"]
         if self.attribute == "data":
             self.loss_tag = "recons_loss"
 
@@ -48,6 +50,7 @@ class SupervisedDecoder(SimbaAttack):
     def forward(self, items):
         z = items["z"]
         self.reconstruction = self.model(z)
+        ys = torch.nn.functional.interpolate(ys, size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
         self.orig = items["x"]
 
         self.loss = self.loss_fn(self.reconstruction, self.orig)
