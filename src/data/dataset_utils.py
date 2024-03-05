@@ -319,6 +319,9 @@ class Challenge(BaseDataset):
         elif config["dataset"] == "celeba":
             self.dataset_obj = CelebA(config)
             self.dataset_obj.format = "jpg"
+        elif config["dataset"] == "cifar10":
+            self.dataset_obj = Cifar10(config)
+            self.dataset_obj.format = "jpg"
         else:
             print("not implemented yet")
             exit()
@@ -345,6 +348,13 @@ class Challenge(BaseDataset):
                     self.dataset_obj.filepaths))
             assert len(l) == 1
             return l[0]
+        elif self.config["dataset"] == "cifar10":
+            filename = self.dataset_obj.indicies[int(filename)]
+            return filename
+        else:
+            print("not implemented yet", self.config["dataset"])
+            exit()
+
 
     def __getitem__(self, index):
         filepath = self.filepaths[index]
