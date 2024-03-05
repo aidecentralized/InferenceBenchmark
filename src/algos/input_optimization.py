@@ -16,6 +16,7 @@ class InputOptimization(SimbaAttack):
     self.attribute = config["attribute"]
     self.model_name = config["target_model"]
 
+    self.img_size = config["img_size"]
     # load obfuscator model
     target_exp_config = json.load(open(config["target_model_config"])) #config_loader(config["model_config"])
     system_config = json.load(open("./configs/system_config.json")) #config_loader(config["model_config"])
@@ -90,7 +91,8 @@ class InputOptimization(SimbaAttack):
 
       for _ in range(self.iters):
         optim.zero_grad()
-        out = self.model({"x": ys})
+        ys = torch.nn.functional.interpolate(ys, size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+        out = self.model({"x": ys})        
         loss = self.loss_fn(out, z)
 
         ssim = self.metric.ssim(img, ys)
