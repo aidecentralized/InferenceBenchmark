@@ -1,6 +1,7 @@
 {
+    "experiment_type": "time_profiling",
     "method": "split_inference",
-    "client": {"model_name": "resnet18", "split_layer": 6,
+    "client": {"model_name": "resnet18", "split_layer": 1,
                "pretrained": false, "optimizer": "adam", "lr": 3e-4},
     "server": {"model_name": "resnet18", "split_layer": 6, "logits": 2, "pretrained": false,
                "lr": 3e-4, "optimizer": "adam"},

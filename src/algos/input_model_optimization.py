@@ -1,5 +1,5 @@
 import json
-from utils.config_utils import process_config
+from utils.config_utils import combine_configs, process_config
 from algos.uniform_noise import UniformNoise
 from algos.nopeek import NoPeek
 from algos.simba_algo import SimbaAttack
@@ -31,16 +31,18 @@ class InputModelOptimization(SimbaAttack):
     self.attribute = config["attribute"]
     self.obf_model_name = config["target_model"]
 
+    self.img_size = config["img_size"]
     # load obfuscator model
     target_exp_config = json.load(open(config["target_model_config"])) #config_loader(config["model_config"])
     system_config = json.load(open("./configs/system_config.json")) #config_loader(config["model_config"])
-    target_config = process_config(system_config, target_exp_config)
+    target_exp_config["client"]["challenge"] = True
+    target_config = process_config(combine_configs(system_config, target_exp_config))
     self.target_config = target_config
 
     from interface import load_algo
     self.obf_model = load_algo(target_config, self.utils)
 
-    wts_path = self.target_config["model_path"] + "/client_model.pt"
+    wts_path = config["target_model_path"]
     wts = torch.load(wts_path)
     if isinstance(self.obf_model.client_model, torch.nn.DataParallel):  # type: ignore
         self.obf_model.client_model.module.load_state_dict(wts)
@@ -131,7 +133,9 @@ class InputModelOptimization(SimbaAttack):
         rand_inp = rand_inp.to(self.utils.device)
 
         optim.zero_grad()
-        ys = gen_model(rand_inp)[:,:,:128, :128]
+        ys = gen_model(rand_inp)
+        # resize the width and height to self.image_size
+        ys = torch.nn.functional.interpolate(ys, size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
         out = self.obf_model({"x": ys})
         loss = self.loss_fn(out, z)
 

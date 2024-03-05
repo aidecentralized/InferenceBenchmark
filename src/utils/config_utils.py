@@ -33,14 +33,15 @@ def process_config(json_dict):
     json_dict['num_gpus'] = len(json_dict.get('gpu_devices'))
     json_dict['train_batch_size'] = json_dict.get('training_batch_size', 64) * json_dict['num_gpus']
     json_dict['experiment_type'] = json_dict.get('experiment_type') or "defense"
-    json_dict['seed'] = json_dict.get('seed') or 1
+    if json_dict.get('seed') or not json_dict.get('client') or not json_dict['client'].get('challenge'):
+        json_dict['seed'] = json_dict.get('seed') or 1
 
     if 'manual_expt_name' in json_dict.keys():
         '''serves two use cases - generating challenge for past experiments which followed different
         naming convention. The other case is when we want to transfer a pretrained obfuscation network to
         a different client model.'''
         experiment_name = json_dict['manual_expt_name']
-    elif json_dict["experiment_type"] in ["defense", "challenge"]:
+    elif json_dict["experiment_type"] in ["defense", "challenge", "time_profiling"]:
         experiment_name = "{}_{}_{}_{}_split{}_{}".format(
             json_dict['method'],
             json_dict['dataset'],
@@ -71,7 +72,10 @@ def process_config(json_dict):
                                      "/challenge/"
 
     experiments_folder = json_dict["experiments_folder"]
-    results_path = experiments_folder + experiment_name + f"_seed{json_dict['seed']}"
+    if json_dict.get('seed') or not json_dict.get('client') or not json_dict['client'].get('challenge'):
+        results_path = experiments_folder + experiment_name + f"_seed{json_dict['seed']}"
+    else:
+        results_path = experiments_folder + experiment_name
 
     log_path = results_path + "/logs/"
     images_path = results_path + "/images/"

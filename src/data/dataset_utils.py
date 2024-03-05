@@ -91,17 +91,15 @@ class BaseDataset2(data.Dataset):
 
     def __getitem__(self, index):
         filepath = self.indicies[index]
-
         # Added all cases - Train, valid, challenge and when no arg is specified
-        if self.config["train"] is True:
-            filename = "train/"+str(filepath)+".jpg"
-        elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
-            filename = "challenge/"+str(filepath)+".jpg"
-        elif self.config["val"] is True:
-            filename = "val/"+str(filepath)+".jpg"
-        else:
-            filename = filepath.split('/')[-1].split('.')[0]
-            
+        # if self.config["train"] is True:
+        #     filename = "train/"+str(filepath)+".jpg"
+        # elif self.config.get("challenge", False):    # check if this is actually present in the config file. If not, lets add it - (Rohan)
+        #     filename = "challenge/"+str(filepath)+".jpg"
+        # else:
+        #     filename = "val/"+str(filepath)+".jpg"
+        filename = str(filepath)
+
         img = self.load_image(filepath)
         img = self.transforms(img)
         pred_label = self.load_label(filepath, "pred")
@@ -111,9 +109,11 @@ class BaseDataset2(data.Dataset):
         else:
             privacy_label = self.load_label(filepath, "privacy")
             privacy_label = self.to_tensor(privacy_label)
+        # print(img.shape, pred_label.shape, privacy_label.shape, filepath, filename)
         sample = {'img': img, 'prediction_label': pred_label,
                   'private_label': privacy_label,
                   'filepath': filepath, 'filename': filename}
+        return sample
 
     def __len__(self):
         return len(self.indicies)
@@ -211,8 +211,10 @@ class Cifar10(BaseDataset2):
         self.data_to_run_on = None
 
         if config["train"] is True:
+            config["path"] += "/train"
             self.data_to_run_on = self.train_dict
         else:
+            config["path"] += "/val"
             self.data_to_run_on = self.val_dict
 
         super(Cifar10, self).__init__(config)
@@ -244,10 +246,7 @@ class Cifar10(BaseDataset2):
         except:
             return 1, 1
 
-
-
-
-class CelebA(datasets.CelebA):
+class CelebA(datasets.CelebA, BaseDataset):
     def __init__(self, config):
         config = deepcopy(config)
         data_split = "train" if config["train"] else "valid" 
@@ -262,10 +261,10 @@ class CelebA(datasets.CelebA):
                              'wavy_hair': 33,
                              'big_nose': 7,
                              'mouth_open': 21}
-        if self.prediction_attribute in self.attr_indices.keys():
+        if self.prediction_attribute in self.attr_indices.keys() or self.prediction_attribute == 'data':
             target_pred = 'attr'
-        else:
-            raise ValueError("Prediction Attribute {} is not supported.".format(self.prediction_attribute))
+        # else:
+        #     raise ValueError("Prediction Attribute {} is not supported.".format(self.prediction_attribute))
         if self.protected_attribute in self.attr_indices.keys():
             target_protect = 'attr'
             target_type = [target_pred, target_protect]
@@ -313,10 +312,16 @@ class Challenge(BaseDataset):
         self.format = "pt" # hardcoded for now
         self.set_filepaths(config["challenge_dir"])
         self.protected_attribute = config["protected_attribute"]
-
+        self.config = config
         self.transforms = config["transforms"]
         if config["dataset"] == "fairface":
             self.dataset_obj = FairFace(config)
+        elif config["dataset"] == "celeba":
+            self.dataset_obj = CelebA(config)
+            self.dataset_obj.format = "jpg"
+        elif config["dataset"] == "cifar10":
+            self.dataset_obj = Cifar10(config)
+            self.dataset_obj.format = "jpg"
         else:
             print("not implemented yet")
             exit()
@@ -334,11 +339,22 @@ class Challenge(BaseDataset):
         """ The challenge folder only consists of filename
         but the corresponding file in the dataset is obtained here
         """
-        filename = "/" + filename + "." + self.dataset_obj.format
-        l = list(filter(lambda x: x.endswith(filename),
-                   self.dataset_obj.filepaths))
-        assert len(l) == 1
-        return l[0]
+        if self.config["dataset"] == "celeba":
+            filename = os.path.join(self.dataset_obj.root, self.dataset_obj.base_folder, "img_align_celeba", filename + ".jpg")
+            return filename
+        elif self.config["dataset"] == "fairface":
+            filename = "/" + filename + "." + self.dataset_obj.format
+            l = list(filter(lambda x: x.endswith(filename),
+                    self.dataset_obj.filepaths))
+            assert len(l) == 1
+            return l[0]
+        elif self.config["dataset"] == "cifar10":
+            filename = self.dataset_obj.indicies[int(filename)]
+            return filename
+        else:
+            print("not implemented yet", self.config["dataset"])
+            exit()
+
 
     def __getitem__(self, index):
         filepath = self.filepaths[index]
@@ -347,7 +363,7 @@ class Challenge(BaseDataset):
         imgpath = self.get_imgpath(filename)
         img = self.load_image(imgpath)
         if self.protected_attribute == "data":
-            privacy_label = self.dataset_obj.transforms(img)
+            privacy_label = self.transforms(img)
         else:
             privacy_label = self.load_label(imgpath, "privacy")
             privacy_label = self.to_tensor(privacy_label)

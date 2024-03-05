@@ -1,5 +1,6 @@
+import time
 from interface import (load_config, load_algo, load_data, load_model, load_utils)
-import torch, random, numpy
+import torch, random, numpy as np
 
 class Scheduler():
     def __init__(self) -> None:
@@ -17,7 +18,7 @@ class Scheduler():
 
         # set seeds
         seed = self.config["seed"]
-        torch.manual_seed(seed); random.seed(seed); numpy.random.seed(seed)
+        torch.manual_seed(seed); random.seed(seed); np.random.seed(seed)
 
         if not self.config["experiment_type"] == "challenge":
             self.utils.copy_source_code(self.config["results_path"])
@@ -41,6 +42,8 @@ class Scheduler():
             self.run_defense_job()
         elif exp_type == "attack":
             self.run_attack_job()
+        elif exp_type == "time_profiling":
+            self.algorithm_time_profiling()
         else:
             print("unknown experiment type")
 
@@ -98,6 +101,28 @@ class Scheduler():
             items = self.utils.get_data(sample)
             z = self.algo.forward(items)
             self.utils.save_images(z,items["filename"])
+
+    def algorithm_time_profiling(self):
+        self.algo.eval()
+        total_iter, warmup_iter, counter = 20, 20, []
+        self.utils.logger.register_tag("runtime_mean")
+        self.utils.logger.register_tag("runtime_std")
+
+        for it, sample in enumerate(self.dataloader.train):
+            items = self.utils.get_data(sample)
+            if it > warmup_iter + total_iter:
+                break
+            if it > warmup_iter:
+                start = time.perf_counter()
+                _ = self.algo.forward(items)
+                end = time.perf_counter()
+                counter.append(end - start)
+            else:
+                _ = self.algo.forward(items)
+        counter = np.array(counter)
+        self.utils.logger.log_data("runtime_mean", counter.mean(), 1)
+        self.utils.logger.log_data("runtime_std", counter.std(), 1)
+        self.utils.logger.flush_epoch()
 
     def epoch_summary(self):
         self.utils.logger.flush_epoch()
