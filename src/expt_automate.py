@@ -61,9 +61,15 @@ hparam = {"challenge_experiment": ["uniform_noise_fairface_data_resnet18_split6_
                                    "nopeek_fairface_data_resnet18_split6_1_alpha_0.97",
                                    "uniform_noise_fairface_data_resnet18_split6_1_distribution_gaussian_mean_0_sigma_0"]}
 
-sys_config = {"dataset_path": "/u/abhi24/Datasets/Faces/fairface/",
-              "experiments_folder": "/u/abhi24/Workspace/simba/experiments/",
-              "gpu_devices":[0,1]}
+sys_config = {
+  "dataset_path": "/home/justinyu/fairface/",
+  "experiments_folder": "/home/justinyu/experiments/",
+  "gpu_devices": [1, 3]
+}
+
+# sys_config = {"dataset_path": "/u/abhi24/Datasets/Faces/fairface/",
+#               "experiments_folder": "/u/abhi24/Workspace/simba/experiments/",
+#               "gpu_devices":[0,1]}
 
 bench_config = combine_configs(bench_config, sys_config)
 
@@ -75,3 +81,4 @@ for param in hparam.keys():
         # For attack
         bench_config[param] = val
         run_experiment(bench_config)
+
