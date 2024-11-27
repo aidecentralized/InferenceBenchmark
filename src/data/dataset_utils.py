@@ -96,9 +96,9 @@ class BaseDataset2(data.Dataset):
         if self.config["train"] is True:
             filename = "train/"+str(filepath)+".jpg"
         elif self.config["challenge"] is True:    # check if this is actually present in the config file. If not, lets add it - (Rohan)
-            filename = "challenge/"+str(filepath)+".jpg"
+            filename = str(filepath)
         elif self.config["val"] is True:
-            filename = "val/"+str(filepath)+".jpg"
+            filename = str(filepath)
         else:
             filename = filepath.split('/')[-1].split('.')[0]
             
@@ -114,7 +114,8 @@ class BaseDataset2(data.Dataset):
         sample = {'img': img, 'prediction_label': pred_label,
                   'private_label': privacy_label,
                   'filepath': filepath, 'filename': filename}
-
+        return sample
+    
     def __len__(self):
         return len(self.indicies)
 
